@@ -1,0 +1,16 @@
+﻿using Wms.Core.Entities;
+using Wms.Core.Interfaces.Repositories;
+using Wms.Core.Interfaces.Services;
+using Wms.Services.Base;
+
+namespace Wms.Services.ZoneService;
+
+public class ZoneService(IRepository<Zone> repository, IZoneRepository zoneRepository)
+    : BaseService<Zone>(repository), IZoneService
+{
+    public async Task<IEnumerable<Zone>> GetZonesWithDetailsAsync(CancellationToken cancellationToken = default)
+        => await zoneRepository.GetZonesWithDetailsAsync(cancellationToken);
+    
+    public async Task<Zone?> GetZoneWithRacksAsync(int zoneId, CancellationToken cancellationToken = default)
+        => await zoneRepository.GetZoneWithRacksAsync(zoneId, cancellationToken);
+}

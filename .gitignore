@@ -1,0 +1,88 @@
+# Build artifacts
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+
+# IDE files
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.sln.docstates
+
+# Rider / JetBrains (дополнительно)
+*.rider/
+*.DotSettings.user
+
+# Configuration with secrets (все файлы окружений)
+appsettings.*.json
+# Если хотите игнорировать все appsettings, раскомментируйте следующую строку:
+# appsettings.json
+
+# User Secrets (для .NET Core)
+secrets.json
+
+# Logs
+*.log
+*.logs
+log/
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Test results
+*.trx
+*.coverage
+*.TestResults
+
+# Profiling
+*.vsp
+*.vspx
+
+# NuGet package folder (если используется packages.config)
+packages/
+!packages/repositories.config
+
+# Entity Framework migration files (НЕ игнорировать!)
+# Migrations/ - обязательно исключить из игнорирования
+# В шаблоне ниже мы не включаем Migrations, поэтому они будут добавлены.
+
+# Windows thumbnails
+Thumbs.db
+
+# macOS
+.DS_Store
+
+# Node.js (если вдруг есть)
+node_modules/
+npm-debug.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Publish folder
+/publish/
+*.Publish.xml
+
+# Database files (если используете локальные .db файлы)
+*.db
+*.sqlite
+*.mdf
+*.ldf
+
+# Certificate files
+*.pfx
+*.pem
+*.crt
+*.key
+
+# ReSharper (если используется)
+_ReSharper*/
+*.resharper

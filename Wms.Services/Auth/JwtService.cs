@@ -13,7 +13,7 @@ public class JwtService(IOptions<JwtSettings> jwtSettings) : IJwtService
 {
     public string GenerateToken(ApplicationUser user, IList<string> roles)
     {
-        var jwtSettingsValue = jwtSettings.Value; // можно сохранить в локальную переменную
+        var jwtSettingsValue = jwtSettings.Value;
 
         var claims = new List<Claim>
         {

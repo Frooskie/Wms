@@ -14,6 +14,7 @@ using Wms.Infrastructure.Data;
 using Wms.Infrastructure.Data.Seed;
 using Wms.Infrastructure.Repositories;
 using Wms.Services.Auth;
+using Wms.Services.BatchService;
 using Wms.Services.CellService;
 using Wms.Services.ProductService;
 using Wms.Services.RackService;
@@ -89,20 +90,21 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddScoped<IJwtService, JwtService>();
-
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IZoneRepository, ZoneRepository>();
 builder.Services.AddScoped<IRackRepository, RackRepository>();
 builder.Services.AddScoped<ICellRepository, CellRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IBatchRepository, BatchRepository>();
 
+builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IZoneService, ZoneService>();
 builder.Services.AddScoped<IRackService, RackService>();
 builder.Services.AddScoped<IShelfService, ShelfService>();
 builder.Services.AddScoped<ICellService, CellService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IBatchService, BatchService>();
 
 builder.Services.AddCors(options =>
 {

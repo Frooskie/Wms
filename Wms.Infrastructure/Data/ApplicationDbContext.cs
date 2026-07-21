@@ -13,6 +13,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Shelf> Shelves { get; set; }
     public DbSet<Cell> Cells { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<Batch> Batches { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,7 +24,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(z => z.Warehouse)
             .WithMany(w => w.Zones)
             .HasForeignKey(z => z.WarehouseId)
-            .OnDelete(DeleteBehavior.Cascade); // при удалении склада удаляются зоны
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Rack>()
             .HasOne(r => r.Zone)
@@ -55,5 +56,27 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Cell>()
             .HasIndex(c => new { c.ShelfId, c.Code })
             .IsUnique();
+        
+        modelBuilder.Entity<Batch>(entity =>
+        {
+            entity.HasKey(b => b.Id);
+            entity.Property(b => b.Quantity).IsRequired();
+            entity.Property(b => b.ReservedQuantity).HasDefaultValue(0);
+            entity.Property(b => b.PurchasePrice).HasPrecision(18, 2);
+            
+            entity.HasOne(b => b.Product)
+                .WithMany()
+                .HasForeignKey(b => b.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(b => b.Cell)
+                .WithMany()
+                .HasForeignKey(b => b.CellId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasIndex(b => b.ExpiryDate);
+            entity.HasIndex(b => b.ProductId);
+            entity.HasIndex(b => b.CellId);
+        });
     }
 }

@@ -70,7 +70,6 @@ public abstract class BaseApiController<TEntity, TDto, TCreateDto, TUpdateDto>(
         await service.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
-
-    // Вспомогательный метод для получения Id сущности
+    
     protected abstract object GetEntityId(TEntity entity);
 }

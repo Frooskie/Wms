@@ -3,41 +3,35 @@ using Wms.Core.Interfaces.Services;
 
 namespace Wms.Services.Base;
 
-public abstract class BaseService<T> : IBaseService<T> where T : class
+public abstract class BaseService<T>(IRepository<T> repository) : IBaseService<T>
+    where T : class
 {
-    protected readonly IRepository<T> _repository;
-
-    protected BaseService(IRepository<T> repository)
-    {
-        _repository = repository;
-    }
-
     public virtual async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await _repository.GetAllAsync(cancellationToken);
+        => await repository.GetAllAsync(cancellationToken);
 
     public virtual async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-        => await _repository.GetByIdAsync(id, cancellationToken);
+        => await repository.GetByIdAsync(id, cancellationToken);
 
     public virtual async Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default)
     {
-        await _repository.AddAsync(entity, cancellationToken);
-        await _repository.SaveChangesAsync(cancellationToken);
+        await repository.AddAsync(entity, cancellationToken);
+        await repository.SaveChangesAsync(cancellationToken);
         return entity;
     }
 
     public virtual async Task UpdateAsync(T entity, CancellationToken cancellationToken = default)
     {
-        _repository.Update(entity);
-        await _repository.SaveChangesAsync(cancellationToken);
+        repository.Update(entity);
+        await repository.SaveChangesAsync(cancellationToken);
     }
 
     public virtual async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var entity = await _repository.GetByIdAsync(id, cancellationToken);
+        var entity = await repository.GetByIdAsync(id, cancellationToken);
         if (entity != null)
         {
-            _repository.Delete(entity);
-            await _repository.SaveChangesAsync(cancellationToken);
+            repository.Delete(entity);
+            await repository.SaveChangesAsync(cancellationToken);
         }
     }
 }

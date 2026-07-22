@@ -9,7 +9,6 @@ public class Zone
     public ZoneType Type { get; set; }
     public int WarehouseId { get; set; }
     
-    // Навигационные свойства
     public Warehouse Warehouse { get; set; } = null!;
     public ICollection<Rack> Racks { get; set; } = new List<Rack>();
 }

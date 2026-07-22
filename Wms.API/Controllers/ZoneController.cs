@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.Controllers.Base;
 using Wms.API.DTOs;
+using Wms.API.DTOs.WarehouseStructure;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces.Services;
 

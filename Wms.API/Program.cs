@@ -18,6 +18,7 @@ using Wms.Services.BatchService;
 using Wms.Services.CellService;
 using Wms.Services.ProductService;
 using Wms.Services.RackService;
+using Wms.Services.ReceiptService;
 using Wms.Services.ShelfService;
 using Wms.Services.WarehouseService;
 using Wms.Services.ZoneService;
@@ -96,6 +97,8 @@ builder.Services.AddScoped<IRackRepository, RackRepository>();
 builder.Services.AddScoped<ICellRepository, CellRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IBatchRepository, BatchRepository>();
+builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
+builder.Services.AddScoped<IInventoryTransactionRepository, InventoryTransactionRepository>();
 
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
@@ -105,6 +108,7 @@ builder.Services.AddScoped<IShelfService, ShelfService>();
 builder.Services.AddScoped<ICellService, CellService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IBatchService, BatchService>();
+builder.Services.AddScoped<IReceiptService, ReceiptService>();
 
 builder.Services.AddCors(options =>
 {

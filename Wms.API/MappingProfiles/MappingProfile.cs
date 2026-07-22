@@ -1,6 +1,10 @@
 ﻿using AutoMapper;
 using Wms.Core.Enums;
 using Wms.API.DTOs;
+using Wms.API.DTOs.Batches;
+using Wms.API.DTOs.Products;
+using Wms.API.DTOs.Receipts;
+using Wms.API.DTOs.WarehouseStructure;
 using Wms.Core.Entities;
 
 namespace Wms.API.MappingProfiles;
@@ -49,5 +53,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Quantity, opt => opt.Ignore())
             .ForMember(dest => dest.ReservedQuantity, opt => opt.Ignore())
             .ForMember(dest => dest.ReceivedDate, opt => opt.Ignore());
+        
+        CreateMap<Receipt, ReceiptDto>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.Lines, opt => opt.MapFrom(src => src.Lines));
+
+        CreateMap<ReceiptLine, ReceiptLineDto>()
+            .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
     }
 }

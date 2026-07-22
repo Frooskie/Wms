@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs;
+using Wms.API.DTOs.Auth;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces;
 

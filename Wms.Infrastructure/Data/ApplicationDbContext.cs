@@ -14,6 +14,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Cell> Cells { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Batch> Batches { get; set; }
+    public DbSet<Receipt> Receipts { get; set; }
+    public DbSet<ReceiptLine> ReceiptLines { get; set; }
+    public DbSet<InventoryTransaction> InventoryTransactions { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -77,6 +80,44 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasIndex(b => b.ExpiryDate);
             entity.HasIndex(b => b.ProductId);
             entity.HasIndex(b => b.CellId);
+        });
+        
+        modelBuilder.Entity<Receipt>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.Supplier).IsRequired().HasMaxLength(200);
+            entity.Property(r => r.Comment).HasMaxLength(500);
+            entity.Property(r => r.CreatedBy).IsRequired().HasMaxLength(450);
+            entity.HasIndex(r => r.Status);
+            entity.HasIndex(r => r.CreatedAt);
+        });
+        
+        modelBuilder.Entity<ReceiptLine>(entity =>
+        {
+            entity.HasKey(rl => rl.Id);
+            entity.HasOne(rl => rl.Receipt)
+                .WithMany(r => r.Lines)
+                .HasForeignKey(rl => rl.ReceiptId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(rl => rl.Product)
+                .WithMany()
+                .HasForeignKey(rl => rl.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(rl => new { rl.ReceiptId, rl.ProductId }).IsUnique();
+        });
+        
+        modelBuilder.Entity<InventoryTransaction>(entity =>
+        {
+            entity.HasKey(it => it.Id);
+            entity.HasOne(it => it.Batch)
+                .WithMany()
+                .HasForeignKey(it => it.BatchId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.Property(it => it.QuantityChange).IsRequired();
+            entity.Property(it => it.UserId).IsRequired().HasMaxLength(450);
+            entity.HasIndex(it => it.BatchId);
+            entity.HasIndex(it => it.Timestamp);
+            entity.HasIndex(it => it.TransactionType);
         });
     }
 }

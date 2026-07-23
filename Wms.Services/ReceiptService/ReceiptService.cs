@@ -1,5 +1,6 @@
 ﻿using Wms.Core.Entities;
 using Wms.Core.Enums;
+using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Repositories;
 using Wms.Core.Interfaces.Services;
 //using Wms.Core.Exceptions;
@@ -25,7 +26,7 @@ public class ReceiptService(
         {
             var product = await productRepository.GetByIdAsync(line.ProductId, cancellationToken);
             if (product == null)
-                throw new InvalidOperationException($"Product with id {line.ProductId} not found.");
+                throw new NotFoundException($"Product with id {line.ProductId} not found.");
         }
 
         receipt.Lines = lines;
@@ -48,19 +49,18 @@ public class ReceiptService(
     {
         var receipt = await receiptRepository.GetReceiptWithLinesAsync(receiptId, cancellationToken);
         if (receipt == null)
-            //throw new NotFoundException($"Receipt with id {receiptId} not found.");
-            throw new InvalidOperationException($"Receipt with id {receiptId} not found.");
+            throw new NotFoundException($"Receipt with id {receiptId} not found.");
 
         if (receipt.Status != ReceiptStatus.Pending)
-            throw new InvalidOperationException($"Receipt is already {receipt.Status}.");
+            throw new BusinessRuleException($"Receipt is already {receipt.Status}.");
         
         foreach (var line in receiveLines)
         {
             var cell = await cellRepository.GetByIdAsync(line.cellId, cancellationToken);
             if (cell == null)
-                throw new InvalidOperationException($"Cell with id {line.cellId} not found.");
+                throw new NotFoundException($"Cell with id {line.cellId} not found.");
             if (cell.IsOccupied)
-                throw new InvalidOperationException($"Cell {cell.Code} is already occupied.");
+                throw new BusinessRuleException($"Cell {cell.Code} is already occupied.");
         }
         
         foreach (var line in receiveLines)
@@ -119,10 +119,9 @@ public class ReceiptService(
     {
         var receipt = await receiptRepository.GetByIdAsync(receiptId, cancellationToken);
         if (receipt == null)
-            //throw new NotFoundException($"Receipt with id {receiptId} not found.");
-            throw new InvalidOperationException($"Receipt with id {receiptId} not found.");
+            throw new NotFoundException($"Receipt with id {receiptId} not found.");
         if (receipt.Status != ReceiptStatus.Pending)
-            throw new InvalidOperationException($"Receipt is already {receipt.Status}.");
+            throw new BusinessRuleException($"Receipt is already {receipt.Status}.");
         receipt.Status = ReceiptStatus.Rejected;
         receiptRepository.Update(receipt);
         await receiptRepository.SaveChangesAsync(cancellationToken);

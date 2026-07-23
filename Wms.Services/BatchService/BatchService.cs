@@ -1,4 +1,5 @@
 ﻿using Wms.Core.Entities;
+using Wms.Core.Exceptions;
 //using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Repositories;
 using Wms.Core.Interfaces.Services;
@@ -32,11 +33,11 @@ public class BatchService : BaseService<Batch>, IBatchService
     {
         var isOccupied = await _batchRepository.IsCellOccupiedByOtherBatchAsync(batch.CellId, null, cancellationToken);
         if (isOccupied)
-            throw new InvalidOperationException("Cell is already occupied by another batch.");
+            throw new BusinessRuleException("Cell is already occupied by another batch.");
 
         var cell = await _cellRepository.GetByIdAsync(batch.CellId, cancellationToken);
         if (cell == null)
-            throw new InvalidOperationException("Cell not found.");
+            throw new NotFoundException("Cell not found.");
         
         cell.IsOccupied = true;
         _cellRepository.Update(cell);
@@ -64,16 +65,15 @@ public class BatchService : BaseService<Batch>, IBatchService
     {
         var batch = await _batchRepository.GetBatchWithProductAndCellAsync(batchId, cancellationToken);
         if (batch == null)
-            // throw new NotFoundException($"Batch with id {batchId} not found.");
-        throw new InvalidOperationException($"Batch with id {batchId} not found.");
+            throw new NotFoundException($"Batch with id {batchId} not found.");
 
         var newCell = await _cellRepository.GetByIdAsync(newCellId, cancellationToken);
         if (newCell == null)
-            throw new InvalidOperationException("Target cell not found.");
+            throw new NotFoundException("Target cell not found.");
         
         var isOccupied = await _batchRepository.IsCellOccupiedByOtherBatchAsync(newCellId, batchId, cancellationToken);
         if (isOccupied)
-            throw new InvalidOperationException("Target cell is already occupied.");
+            throw new BusinessRuleException("Target cell is already occupied.");
         
         var oldCell = await _cellRepository.GetByIdAsync(batch.CellId, cancellationToken);
         if (oldCell != null)

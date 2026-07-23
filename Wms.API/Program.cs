@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Wms.API.MappingProfiles;
+using Wms.API.Middlewares;
 using Wms.Core.Options;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces;
@@ -121,6 +122,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

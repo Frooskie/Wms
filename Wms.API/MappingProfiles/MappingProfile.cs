@@ -4,6 +4,7 @@ using Wms.API.DTOs;
 using Wms.API.DTOs.Batches;
 using Wms.API.DTOs.Products;
 using Wms.API.DTOs.Receipts;
+using Wms.API.DTOs.Supply;
 using Wms.API.DTOs.WarehouseStructure;
 using Wms.Core.Entities;
 
@@ -60,5 +61,22 @@ public class MappingProfile : Profile
 
         CreateMap<ReceiptLine, ReceiptLineDto>()
             .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
+        
+        CreateMap<SupplyRequest, SupplyRequestDto>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.Lines, opt => opt.MapFrom(src => src.Lines));
+
+        CreateMap<SupplyRequestLine, SupplyRequestLineDto>()
+            .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
+
+        CreateMap<SupplyOrder, SupplyOrderDto>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.Lines, opt => opt.MapFrom(src => src.Lines))
+            .ForMember(dest => dest.Reservations, opt => opt.MapFrom(src => src.Reservations));
+
+        CreateMap<SupplyOrderLine, SupplyOrderLineDto>()
+            .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
+
+        CreateMap<Reservation, ReservationDto>();
     }
 }

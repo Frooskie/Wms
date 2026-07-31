@@ -5,7 +5,7 @@ using Wms.Services.Base;
 
 namespace Wms.Services.ShelfService;
 
-public class ShelfService(IRepository<Shelf> repository) : BaseService<Shelf>(repository), IShelfService
+public class ShelfService(IRepository<Shelf> repository) : CrudService<Shelf>(repository), IShelfService
 {
 
 }

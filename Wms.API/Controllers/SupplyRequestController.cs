@@ -32,7 +32,7 @@ public class SupplyRequestController(ISupplyRequestService service, IMapper mapp
             RequestedQuantity = l.RequestedQuantity
         }).ToList();
 
-        var created = await service.CreateWithLinesAsync(req, lines, cancellationToken);
+        var created = await service.CreateSupplyRequestAsync(req, lines, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, mapper.Map<SupplyRequestDto>(created));
     }
 

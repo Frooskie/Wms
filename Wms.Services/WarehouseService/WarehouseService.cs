@@ -5,7 +5,7 @@ using Wms.Services.Base;
 
 namespace Wms.Services.WarehouseService;
 
-public class WarehouseService(IRepository<Warehouse> repository) : BaseService<Warehouse>(repository), IWarehouseService
+public class WarehouseService(IRepository<Warehouse> repository) : CrudService<Warehouse>(repository), IWarehouseService
 {
 
 }

@@ -2,7 +2,7 @@
 
 namespace Wms.Core.Interfaces.Services;
 
-public interface IShelfService : IBaseService<Shelf>
+public interface IShelfService : ICrudService<Shelf>
 {
     
 }

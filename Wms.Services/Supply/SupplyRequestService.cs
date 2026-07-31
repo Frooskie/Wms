@@ -3,7 +3,6 @@ using Wms.Core.Enums;
 using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Repositories;
 using Wms.Core.Interfaces.Services;
-using Wms.Services.Base;
 
 namespace Wms.Services.Supply;
 
@@ -11,15 +10,9 @@ public class SupplyRequestService(
     ISupplyRequestRepository repository,
     IRepository<SupplyRequestLine> lineRepository,
     IProductRepository productRepository)
-    : BaseService<SupplyRequest>(repository), ISupplyRequestService
+    : ISupplyRequestService
 {
-    public async Task<SupplyRequest?> GetByIdWithLinesAsync(int id, CancellationToken cancellationToken = default)
-        => await repository.GetSupplyRequestWithLinesAsync(id, cancellationToken);
-
-    public async Task<IEnumerable<SupplyRequest>> GetAllWithLinesAsync(CancellationToken cancellationToken = default)
-        => await repository.GetSupplyRequestsWithLinesAsync(cancellationToken);
-
-    public async Task<SupplyRequest> CreateWithLinesAsync(SupplyRequest request, List<SupplyRequestLine> lines, CancellationToken cancellationToken = default)
+    public async Task<SupplyRequest> CreateSupplyRequestAsync(SupplyRequest request, List<SupplyRequestLine> lines, CancellationToken cancellationToken = default)
     {
         foreach (var line in lines)
         {
@@ -27,13 +20,18 @@ public class SupplyRequestService(
             if (product == null)
                 throw new NotFoundException(nameof(Product), line.ProductId);
         }
-
         request.Lines = lines;
         await repository.AddAsync(request, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         return request;
     }
-    
+
+    public async Task<SupplyRequest?> GetByIdWithLinesAsync(int id, CancellationToken cancellationToken = default)
+        => await repository.GetSupplyRequestWithLinesAsync(id, cancellationToken);
+
+    public async Task<IEnumerable<SupplyRequest>> GetAllWithLinesAsync(CancellationToken cancellationToken = default)
+        => await repository.GetSupplyRequestsWithLinesAsync(cancellationToken);
+
     public async Task SubmitAsync(int id, string currentUserId, CancellationToken cancellationToken = default)
     {
         var request = await repository.GetByIdAsync(id, cancellationToken);

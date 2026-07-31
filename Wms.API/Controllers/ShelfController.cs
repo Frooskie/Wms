@@ -8,7 +8,7 @@ using Wms.Core.Interfaces.Services;
 namespace Wms.API.Controllers;
 
 public class ShelfController(IShelfService shelfService, IMapper mapper)
-    : BaseApiController<Shelf, ShelfDto, CreateShelfRequest, UpdateShelfRequest>(shelfService, mapper)
+    : BaseCrudController<Shelf, ShelfDto, CreateShelfRequest, UpdateShelfRequest>(shelfService, mapper)
 {
     protected override object GetEntityId(Shelf entity) => entity.Id;
 }

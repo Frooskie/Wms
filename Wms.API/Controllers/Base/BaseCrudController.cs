@@ -8,68 +8,48 @@ namespace Wms.API.Controllers.Base;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public abstract class BaseApiController<TEntity, TDto, TCreateDto, TUpdateDto>(
-    IBaseService<TEntity> service,
-    IMapper mapper) : ControllerBase
+public abstract class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>(
+    ICrudService<TEntity> service,
+    IMapper mapper) : BaseReadOnlyController<TEntity, TDto>(service, mapper)
     where TEntity : class
     where TDto : class
     where TCreateDto : class
     where TUpdateDto : class
 {
-    protected readonly IMapper _mapper = mapper;
-
-    [HttpGet]
-    public virtual async Task<ActionResult<IEnumerable<TDto>>> GetAll(CancellationToken cancellationToken)
-    {
-        var entities = await service.GetAllAsync(cancellationToken);
-        var dtos = _mapper.Map<IEnumerable<TDto>>(entities);
-        return Ok(dtos);
-    }
-    
-    [HttpGet("{id}")]
-    public virtual async Task<ActionResult<TDto>> GetById(int id, CancellationToken cancellationToken)
-    {
-        var entity = await service.GetByIdAsync(id, cancellationToken);
-        if (entity is null)
-            return NotFound();
-        var dto = _mapper.Map<TDto>(entity);
-        return Ok(dto);
-    }
-    
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
     public virtual async Task<ActionResult<TDto>> Create([FromBody] TCreateDto createDto, CancellationToken cancellationToken)
     {
-        var entity = _mapper.Map<TEntity>(createDto);
-        await service.CreateAsync(entity, cancellationToken);
-        var dto = _mapper.Map<TDto>(entity);
-        return CreatedAtAction(nameof(GetById), new { id = GetEntityId(entity) }, dto);
+        var entity = Mapper.Map<TEntity>(createDto);
+        var created = await service.CreateAsync(entity, cancellationToken);
+        var dto = Mapper.Map<TDto>(created);
+        return CreatedAtAction(nameof(GetById), new { id = GetEntityId(created) }, dto);
     }
-    
+
     [HttpPut("{id}")]
     [Authorize(Roles = "Manager,Chief")]
     public virtual async Task<IActionResult> Update(int id, [FromBody] TUpdateDto updateDto, CancellationToken cancellationToken)
     {
         var existing = await service.GetByIdAsync(id, cancellationToken);
-        if (existing is null)
+        if (existing == null)
             return NotFound();
 
-        _mapper.Map(updateDto, existing);
+        Mapper.Map(updateDto, existing);
         await service.UpdateAsync(existing, cancellationToken);
         return NoContent();
     }
-    
+
     [HttpDelete("{id}")]
     [Authorize(Roles = "Manager,Chief")]
     public virtual async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var existing = await service.GetByIdAsync(id, cancellationToken);
-        if (existing is null)
+        if (existing == null)
             return NotFound();
 
         await service.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
-    
+
     protected abstract object GetEntityId(TEntity entity);
 }

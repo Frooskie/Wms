@@ -32,7 +32,7 @@ public class ReceiptController(IReceiptService receiptService, IMapper mapper) :
             ExpectedQuantity = l.ExpectedQuantity
         }).ToList();
 
-        var created = await receiptService.CreateWithLinesAsync(receipt, lines, cancellationToken);
+        var created = await receiptService.CreateReceiptAsync(receipt, lines, cancellationToken);
         var dto = mapper.Map<ReceiptDto>(created);
         return CreatedAtAction(nameof(GetReceipt), new { id = created.Id }, dto);
     }

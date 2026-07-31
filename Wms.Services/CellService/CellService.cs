@@ -6,7 +6,7 @@ using Wms.Services.Base;
 namespace Wms.Services.CellService;
 
 public class CellService(IRepository<Cell> repository, ICellRepository cellRepository)
-    : BaseService<Cell>(repository), ICellService
+    : CrudService<Cell>(repository), ICellService
 {
     public async Task<bool> IsCellOccupiedAsync(int cellId, CancellationToken cancellationToken = default)
         => await cellRepository.IsCellOccupiedAsync(cellId, cancellationToken);

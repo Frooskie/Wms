@@ -9,7 +9,7 @@ using Wms.Core.Interfaces.Services;
 namespace Wms.API.Controllers;
 
 public class ProductController(IProductService productService, IMapper mapper)
-    : BaseApiController<Product, ProductDto, CreateProductRequest, UpdateProductRequest>(productService, mapper)
+    : BaseCrudController<Product, ProductDto, CreateProductRequest, UpdateProductRequest>(productService, mapper)
 {
     protected override object GetEntityId(Product entity) => entity.Id;
     
@@ -17,7 +17,7 @@ public class ProductController(IProductService productService, IMapper mapper)
     public async Task<ActionResult<IEnumerable<ProductDto>>> SearchByName([FromQuery] string name, CancellationToken cancellationToken)
     {
         var products = await productService.GetProductsByNameAsync(name, cancellationToken);
-        var dtos = _mapper.Map<IEnumerable<ProductDto>>(products);
+        var dtos = Mapper.Map<IEnumerable<ProductDto>>(products);
         return Ok(dtos);
     }
     
@@ -25,7 +25,7 @@ public class ProductController(IProductService productService, IMapper mapper)
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetByCategory(string category, CancellationToken cancellationToken)
     {
         var products = await productService.GetProductsByCategoryAsync(category, cancellationToken);
-        var dtos = _mapper.Map<IEnumerable<ProductDto>>(products);
+        var dtos = Mapper.Map<IEnumerable<ProductDto>>(products);
         return Ok(dtos);
     }
 }

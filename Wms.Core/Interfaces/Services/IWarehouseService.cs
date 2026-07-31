@@ -2,7 +2,7 @@
 
 namespace Wms.Core.Interfaces.Services;
 
-public interface IWarehouseService : IBaseService<Warehouse>
+public interface IWarehouseService : ICrudService<Warehouse>
 {
     
 }

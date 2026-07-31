@@ -2,7 +2,7 @@
 
 namespace Wms.Core.Interfaces.Services;
 
-public interface IZoneService : IBaseService<Zone>
+public interface IZoneService : ICrudService<Zone>
 {
     Task<IEnumerable<Zone>> GetZonesWithDetailsAsync(CancellationToken cancellationToken = default);
     Task<Zone?> GetZoneWithRacksAsync(int zoneId, CancellationToken cancellationToken = default);

@@ -37,7 +37,9 @@ API знает о Infrastructure только через DI (регистрац�
 **Содержит:**
 - **Entities** – доменные модели: `Warehouse`, `Zone`, `Rack`, `Shelf`, `Cell`, `Product`, `Batch`, `InventoryTransaction`, `ApplicationUser` (наследует `IdentityUser`).
 - **Enums** – перечисления: `ZoneType`, `TransactionType`, статусы документов.
-- **Interfaces** – контракты для репозиториев (`IRepository<T>`, `IZoneRepository`, `IRackRepository`, `ICellRepository`, `IProductRepository` и др.) и сервисов (`IBaseService<T>`, `IWarehouseService`, `IZoneService`, …, `IJwtService`).
+- **Interfaces** – контракты для репозиториев (`IRepository<T>`, `IZoneRepository`, `IRackRepository`, `ICellRepository`, `IProductRepository` и др.) и сервисов. Базовые интерфейсы сервисов:
+  - `IReadOnlyService<T>` – только методы чтения (`GetAll`, `GetById`).
+  - `ICrudService<T>` – наследует `IReadOnlyService<T>` и добавляет методы изменения (`Create`, `Update`, `Delete`).
 - **Options** – классы конфигурации (например, `JwtSettings`).
 - **Exceptions** – пользовательские исключения (если необходимы).
 
@@ -70,8 +72,11 @@ API знает о Infrastructure только через DI (регистрац�
 **Назначение:** реализация бизнес-логики приложения.
 
 **Содержит:**
-- **Base/BaseService<T>** – абстрактный базовый класс, реализующий CRUD-методы (`GetAllAsync`, `GetByIdAsync`, `CreateAsync`, `UpdateAsync`, `DeleteAsync`) через `IRepository<T>`.
-- **Специфические сервисы** (`WarehouseService`, `ZoneService`, `RackService`, `ShelfService`, `CellService`, `ProductService`) – наследуют `BaseService<T>` и реализуют свои интерфейсы, добавляя уникальные методы (например, `GetZonesWithDetailsAsync`).
+- `ReadOnlyService<T>` – реализует `IReadOnlyService<T>` и предоставляет базовую логику для методов чтения через репозиторий.
+- `CrudService<T>` – наследует `ReadOnlyService<T>` и реализует `ICrudService<T>`, добавляя методы создания, обновления и удаления с сохранением в базу.
+- **Специфические сервисы-справочники** (`ProductService`, `WarehouseService`, `ZoneService`, `RackService`, `ShelfService`, `CellService`) наследуют `CrudService<T>` и реализуют свои интерфейсы. Они могут добавлять уникальные методы (например, `GetByCategoryAsync` для `ProductService`).
+- **Сервисы для сущностей со статусами** (`ReceiptService`, `SupplyRequestService`, `SupplyOrderService`) не используют общие базовые классы, а реализуют кастомные интерфейсы с явными бизнес-операциями.
+- **Сервис для Batch** (`BatchService`) наследует `ReadOnlyService<Batch>` и реализует `IBatchService`, добавляя только методы `MoveBatchAsync` и `GetBatchesWithFiltersAsync`.
 - **Auth/JwtService** – реализация генерации JWT-токенов.
 - **BackgroundServices** – фоновые задачи (уведомления о сроках годности, низких остатках).
 - **Валидаторы** – если используем FluentValidation.
@@ -106,6 +111,10 @@ API знает о Infrastructure только через DI (регистрац�
 - `Swashbuckle.AspNetCore` – для Swagger/OpenAPI.
 - `Microsoft.AspNetCore.Authentication.JwtBearer` – для JWT-аутентификации.
 
+Контроллеры разделены на две категории:
+- **Справочники** (`ProductController`, `WarehouseController`, `ZoneController`, `RackController`, `ShelfController`, `CellController`) наследуют `BaseCrudController` и предоставляют полный CRUD.
+- **Контроллеры со статусами** (`ReceiptController`, `SupplyRequestController`, `SupplyOrderController`) и **контроллер для Batch** (`BatchController`) не используют общий базовый класс, а реализуют только необходимые эндпоинты (например, `POST /api/receipts`, `PUT /api/receipts/{id}/receive` и т.д.). Это соответствует бизнес-правилам и исключает нежелательные операции.
+
 ---
 
 ## 3. Ключевые архитектурные решения
@@ -124,18 +133,23 @@ API знает о Infrastructure только через DI (регистрац�
 
 ---
 
-### 3.2. Обобщённый репозиторий и базовый сервис
+### 3.2. Базовые классы сервисов и контроллеров
 
-**Репозиторий:** `IRepository<T>` с реализацией `Repository<T>`.
+**Репозиторий:** `IRepository<T>` с реализацией `Repository<T>` предоставляет базовые методы доступа к данным (`GetAll`, `GetById`, `Add`, `Update`, `Delete`, `SaveChanges`). Все специфические репозитории наследуют его и добавляют свои методы (например, загрузку навигационных свойств).
 
-**Базовый сервис:** `BaseService<T>` реализует стандартные CRUD-методы через `IRepository<T>`.
+**Сервисы:**
+- `ReadOnlyService<T>` – реализует только чтение и используется для сущностей, которые не должны изменяться напрямую (`Batch`, а также, возможно, `Reservation`).
+- `CrudService<T>` – для справочников, где разрешён полный CRUD. Он наследует `ReadOnlyService<T>` и добавляет методы изменения. Конкретные сервисы переопределяют `DeleteAsync`, чтобы добавить проверки зависимостей.
 
-**Обоснование:**
-- Устраняет дублирование кода (DRY).
-- Упрощает добавление новых сущностей – достаточно создать интерфейс, унаследованный от `IBaseService<T>`, и класс, наследующий `BaseService<T>`.
-- Сохраняет гибкость: при необходимости методы могут быть переопределены (`virtual`).
+**Контроллеры:**
+- `BaseReadOnlyController<TEntity, TDto>` – предоставляет эндпоинты `GET` (все и по id) для сущностей только на чтение.
+- `BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>` – наследует `BaseReadOnlyController` и добавляет эндпоинты `POST`, `PUT`, `DELETE` для справочников. Использует `ICrudService<TEntity>`.
 
-**Альтернативы:** использование CQRS с отдельными командами/запросами – более сложно, для текущего проекта избыточно.
+**Преимущества такого подхода:**
+- Чёткое разделение ответственности: каждая сущность получает только разрешённые операции.
+- Безопасность – невозможно случайно вызвать `Update` для `Batch` или изменить статус документа через `PUT`.
+- Упрощение тестирования и поддержки – бизнес-правила локализованы в явных методах сервисов.
+- Уменьшение дублирования кода для справочников.
 
 ---
 

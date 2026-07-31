@@ -8,7 +8,7 @@ using Wms.Core.Interfaces.Services;
 namespace Wms.API.Controllers;
 
 public class CellController(ICellService cellService, IMapper mapper)
-    : BaseApiController<Cell, CellDto, CreateCellRequest, UpdateCellRequest>(cellService, mapper)
+    : BaseCrudController<Cell, CellDto, CreateCellRequest, UpdateCellRequest>(cellService, mapper)
 {
     protected override object GetEntityId(Cell entity) => entity.Id;
 }

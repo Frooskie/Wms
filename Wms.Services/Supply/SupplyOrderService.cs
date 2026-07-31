@@ -3,21 +3,23 @@ using Wms.Core.Enums;
 using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Repositories;
 using Wms.Core.Interfaces.Services;
-using Wms.Services.Base;
 
 namespace Wms.Services.Supply;
 
 public class SupplyOrderService(
     ISupplyOrderRepository orderRepository,
+    IRepository<SupplyOrderLine> orderLineRepository,
     IBatchRepository batchRepository,
     IReservationRepository reservationRepository,
     IInventoryTransactionRepository transactionRepository,
     ICellRepository cellRepository,
-    IRepository<SupplyOrderLine>? lineRepository,
     IProductRepository productRepository)
-    : BaseService<SupplyOrder>(orderRepository), ISupplyOrderService
+    : ISupplyOrderService
 {
-    public async Task<SupplyOrder> CreateOrderAsync(SupplyOrder order, List<SupplyOrderLine> lines, CancellationToken cancellationToken = default)
+    public async Task<SupplyOrder> CreateOrderAsync(
+        SupplyOrder order,
+        List<SupplyOrderLine> lines,
+        CancellationToken cancellationToken = default)
     {
         foreach (var line in lines)
         {
@@ -31,21 +33,26 @@ public class SupplyOrderService(
         await orderRepository.SaveChangesAsync(cancellationToken);
         return order;
     }
-    
-    public async Task<SupplyOrder?> GetByIdWithDetailsAsync(int id, CancellationToken cancellationToken = default)
+
+    public async Task<SupplyOrder?> GetByIdWithDetailsAsync(
+        int id,
+        CancellationToken cancellationToken = default)
         => await orderRepository.GetSupplyOrderWithLinesAndReservationsAsync(id, cancellationToken);
-    
-    public async Task<IEnumerable<SupplyOrder>> GetAllWithLinesAsync(CancellationToken cancellationToken = default)
+
+    public async Task<IEnumerable<SupplyOrder>> GetAllWithLinesAsync(
+        CancellationToken cancellationToken = default)
         => await orderRepository.GetSupplyOrdersWithLinesAsync(cancellationToken);
-    
-    public async Task ConfirmOrderAsync(int orderId, CancellationToken cancellationToken = default)
+
+    public async Task ConfirmOrderAsync(
+        int orderId,
+        CancellationToken cancellationToken = default)
     {
         var order = await orderRepository.GetSupplyOrderWithLinesAndReservationsAsync(orderId, cancellationToken);
         if (order == null)
             throw new NotFoundException(nameof(SupplyOrder), orderId);
 
         if (order.Status != SupplyOrderStatus.Draft)
-            throw new BusinessRuleException("Only draft orders can be confirmed.");
+            throw new BusinessRuleException($"Cannot confirm order with status '{order.Status}'. Only Draft orders can be confirmed.");
 
         var reservationsToCreate = new List<Reservation>();
         var batchesToUpdate = new List<Batch>();
@@ -54,20 +61,25 @@ public class SupplyOrderService(
         {
             var productId = line.ProductId;
             var requestedQty = line.Quantity;
-            
+
+            // Находим все партии для данного продукта, у которых есть доступный остаток
             var availableBatches = await batchRepository.FindAsync(
                 b => b.ProductId == productId && (b.Quantity - b.ReservedQuantity) > 0,
                 cancellationToken);
-            
+
+            // Сортируем по сроку годности (FIFO)
             var sortedBatches = availableBatches.OrderBy(b => b.ExpiryDate).ToList();
 
-            var remaining = requestedQty;
+            var remainingToReserve = requestedQty;
+
             foreach (var batch in sortedBatches)
             {
-                if (remaining <= 0) break;
+                if (remainingToReserve <= 0)
+                    break;
+
                 var available = batch.Quantity - batch.ReservedQuantity;
-                var reserveQty = Math.Min(available, remaining);
-                
+                var reserveQty = Math.Min(available, remainingToReserve);
+
                 if (reserveQty > 0)
                 {
                     var reservation = new Reservation
@@ -78,47 +90,52 @@ public class SupplyOrderService(
                     };
                     reservationsToCreate.Add(reservation);
 
+                    // Обновляем зарезервированное количество в партии
                     batch.ReservedQuantity += reserveQty;
                     batchesToUpdate.Add(batch);
 
-                    remaining -= reserveQty;
+                    remainingToReserve -= reserveQty;
                 }
             }
 
-            if (remaining > 0)
+            if (remainingToReserve > 0)
             {
                 throw new BusinessRuleException(
-                    $"Not enough stock for product ID {productId}. Missing {remaining} units.");
+                    $"Not enough available stock for product ID {productId}. Missing {remainingToReserve} units.");
             }
         }
         
-        foreach (var res in reservationsToCreate)
-            await reservationRepository.AddAsync(res, cancellationToken);
+        foreach (var reservation in reservationsToCreate)
+            await reservationRepository.AddAsync(reservation, cancellationToken);
 
         foreach (var batch in batchesToUpdate)
             batchRepository.Update(batch);
-
+        
         order.Status = SupplyOrderStatus.Confirmed;
         order.ConfirmedAt = DateTime.UtcNow;
         orderRepository.Update(order);
 
         await orderRepository.SaveChangesAsync(cancellationToken);
     }
-    
-    public async Task ShipOrderAsync(int orderId, string userId, CancellationToken cancellationToken = default)
+
+    public async Task ShipOrderAsync(
+        int orderId,
+        string userId,
+        CancellationToken cancellationToken = default)
     {
         var order = await orderRepository.GetSupplyOrderWithLinesAndReservationsAsync(orderId, cancellationToken);
         if (order == null)
             throw new NotFoundException(nameof(SupplyOrder), orderId);
 
         if (order.Status != SupplyOrderStatus.Confirmed)
-            throw new BusinessRuleException("Only confirmed orders can be shipped.");
+            throw new BusinessRuleException($"Cannot ship order with status '{order.Status}'. Only Confirmed orders can be shipped.");
 
         var reservations = order.Reservations.ToList();
-        if (reservations.Count == 0)
-            throw new BusinessRuleException("No reservations found for this order.");
-        
-        var grouped = reservations
+        if (!reservations.Any())
+            throw new BusinessRuleException("Order has no reservations. Cannot ship.");
+
+        // Группируем резервы по партии для оптимизации
+        var groupedReservations = reservations
             .GroupBy(r => r.BatchId)
             .Select(g => new
             {
@@ -129,28 +146,32 @@ public class SupplyOrderService(
             .ToList();
 
         var transactions = new List<InventoryTransaction>();
+        var batchesToUpdate = new List<Batch>();
+        var cellsToUpdate = new List<Cell>();
 
-        foreach (var group in grouped)
+        foreach (var group in groupedReservations)
         {
             var batch = await batchRepository.GetByIdAsync(group.BatchId, cancellationToken);
             if (batch == null)
                 throw new NotFoundException(nameof(Batch), group.BatchId);
-            
+
+            // Списываем зарезервированное количество
             batch.Quantity -= group.TotalReserved;
             batch.ReservedQuantity -= group.TotalReserved;
             
             if (batch.Quantity == 0)
             {
                 var cell = await cellRepository.GetByIdAsync(batch.CellId, cancellationToken);
-                if (cell != null)
+                if (cell != null && cell.IsOccupied)
                 {
                     cell.IsOccupied = false;
-                    cellRepository.Update(cell);
+                    cellsToUpdate.Add(cell);
                 }
             }
 
-            batchRepository.Update(batch);
-            
+            batchesToUpdate.Add(batch);
+
+            // Создаём транзакцию списания
             var transaction = new InventoryTransaction
             {
                 BatchId = batch.Id,
@@ -162,12 +183,19 @@ public class SupplyOrderService(
             };
             transactions.Add(transaction);
         }
+
+        // Удаляем все резервы этого заказа
+        foreach (var reservation in reservations)
+            reservationRepository.Delete(reservation);
         
-        foreach (var res in reservations)
-            reservationRepository.Delete(res);
-        
-        foreach (var t in transactions)
-            await transactionRepository.AddAsync(t, cancellationToken);
+        foreach (var transaction in transactions)
+            await transactionRepository.AddAsync(transaction, cancellationToken);
+
+        foreach (var batch in batchesToUpdate)
+            batchRepository.Update(batch);
+
+        foreach (var cell in cellsToUpdate)
+            cellRepository.Update(cell);
         
         order.Status = SupplyOrderStatus.Shipped;
         order.ShippedAt = DateTime.UtcNow;

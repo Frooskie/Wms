@@ -6,7 +6,7 @@ using Wms.Services.Base;
 namespace Wms.Services.ZoneService;
 
 public class ZoneService(IRepository<Zone> repository, IZoneRepository zoneRepository)
-    : BaseService<Zone>(repository), IZoneService
+    : CrudService<Zone>(repository), IZoneService
 {
     public async Task<IEnumerable<Zone>> GetZonesWithDetailsAsync(CancellationToken cancellationToken = default)
         => await zoneRepository.GetZonesWithDetailsAsync(cancellationToken);

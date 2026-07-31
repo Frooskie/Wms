@@ -6,7 +6,7 @@ using Wms.Services.Base;
 namespace Wms.Services.RackService;
 
 public class RackService(IRepository<Rack> repository, IRackRepository rackRepository)
-    : BaseService<Rack>(repository), IRackService
+    : CrudService<Rack>(repository), IRackService
 {
     public async Task<IEnumerable<Rack>> GetRacksWithShelvesAndCellsAsync(CancellationToken cancellationToken = default)
         => await rackRepository.GetRacksWithShelvesAndCellsAsync(cancellationToken);

@@ -7,5 +7,4 @@ namespace Wms.Services.WarehouseService;
 
 public class WarehouseService(IRepository<Warehouse> repository) : CrudService<Warehouse>(repository), IWarehouseService
 {
-
 }

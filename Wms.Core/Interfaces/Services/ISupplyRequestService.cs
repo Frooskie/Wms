@@ -4,7 +4,9 @@ namespace Wms.Core.Interfaces.Services;
 
 public interface ISupplyRequestService
 {
-    Task<SupplyRequest> CreateSupplyRequestAsync(SupplyRequest request, List<SupplyRequestLine> lines, CancellationToken cancellationToken = default);
+    Task<SupplyRequest> CreateSupplyRequestAsync(SupplyRequest request, List<SupplyRequestLine> lines,
+        CancellationToken cancellationToken = default);
+
     Task<SupplyRequest?> GetByIdWithLinesAsync(int id, CancellationToken cancellationToken = default);
     Task<IEnumerable<SupplyRequest>> GetAllWithLinesAsync(CancellationToken cancellationToken = default);
     Task SubmitAsync(int id, string currentUserId, CancellationToken cancellationToken = default);

@@ -4,5 +4,4 @@ namespace Wms.Core.Interfaces.Services;
 
 public interface IShelfService : ICrudService<Shelf>
 {
-    
 }

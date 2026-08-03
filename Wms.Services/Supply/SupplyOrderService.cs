@@ -37,11 +37,15 @@ public class SupplyOrderService(
     public async Task<SupplyOrder?> GetByIdWithDetailsAsync(
         int id,
         CancellationToken cancellationToken = default)
-        => await orderRepository.GetSupplyOrderWithLinesAndReservationsAsync(id, cancellationToken);
+    {
+        return await orderRepository.GetSupplyOrderWithLinesAndReservationsAsync(id, cancellationToken);
+    }
 
     public async Task<IEnumerable<SupplyOrder>> GetAllWithLinesAsync(
         CancellationToken cancellationToken = default)
-        => await orderRepository.GetSupplyOrdersWithLinesAsync(cancellationToken);
+    {
+        return await orderRepository.GetSupplyOrdersWithLinesAsync(cancellationToken);
+    }
 
     public async Task ConfirmOrderAsync(
         int orderId,
@@ -52,7 +56,8 @@ public class SupplyOrderService(
             throw new NotFoundException(nameof(SupplyOrder), orderId);
 
         if (order.Status != SupplyOrderStatus.Draft)
-            throw new BusinessRuleException($"Cannot confirm order with status '{order.Status}'. Only Draft orders can be confirmed.");
+            throw new BusinessRuleException(
+                $"Cannot confirm order with status '{order.Status}'. Only Draft orders can be confirmed.");
 
         var reservationsToCreate = new List<Reservation>();
         var batchesToUpdate = new List<Batch>();
@@ -64,7 +69,7 @@ public class SupplyOrderService(
 
             // Находим все партии для данного продукта, у которых есть доступный остаток
             var availableBatches = await batchRepository.FindAsync(
-                b => b.ProductId == productId && (b.Quantity - b.ReservedQuantity) > 0,
+                b => b.ProductId == productId && b.Quantity - b.ReservedQuantity > 0,
                 cancellationToken);
 
             // Сортируем по сроку годности (FIFO)
@@ -99,18 +104,16 @@ public class SupplyOrderService(
             }
 
             if (remainingToReserve > 0)
-            {
                 throw new BusinessRuleException(
                     $"Not enough available stock for product ID {productId}. Missing {remainingToReserve} units.");
-            }
         }
-        
+
         foreach (var reservation in reservationsToCreate)
             await reservationRepository.AddAsync(reservation, cancellationToken);
 
         foreach (var batch in batchesToUpdate)
             batchRepository.Update(batch);
-        
+
         order.Status = SupplyOrderStatus.Confirmed;
         order.ConfirmedAt = DateTime.UtcNow;
         orderRepository.Update(order);
@@ -128,10 +131,11 @@ public class SupplyOrderService(
             throw new NotFoundException(nameof(SupplyOrder), orderId);
 
         if (order.Status != SupplyOrderStatus.Confirmed)
-            throw new BusinessRuleException($"Cannot ship order with status '{order.Status}'. Only Confirmed orders can be shipped.");
+            throw new BusinessRuleException(
+                $"Cannot ship order with status '{order.Status}'. Only Confirmed orders can be shipped.");
 
         var reservations = order.Reservations.ToList();
-        if (!reservations.Any())
+        if (reservations.Count == 0)
             throw new BusinessRuleException("Order has no reservations. Cannot ship.");
 
         // Группируем резервы по партии для оптимизации
@@ -158,7 +162,7 @@ public class SupplyOrderService(
             // Списываем зарезервированное количество
             batch.Quantity -= group.TotalReserved;
             batch.ReservedQuantity -= group.TotalReserved;
-            
+
             if (batch.Quantity == 0)
             {
                 var cell = await cellRepository.GetByIdAsync(batch.CellId, cancellationToken);
@@ -187,7 +191,7 @@ public class SupplyOrderService(
         // Удаляем все резервы этого заказа
         foreach (var reservation in reservations)
             reservationRepository.Delete(reservation);
-        
+
         foreach (var transaction in transactions)
             await transactionRepository.AddAsync(transaction, cancellationToken);
 
@@ -196,11 +200,11 @@ public class SupplyOrderService(
 
         foreach (var cell in cellsToUpdate)
             cellRepository.Update(cell);
-        
+
         order.Status = SupplyOrderStatus.Shipped;
         order.ShippedAt = DateTime.UtcNow;
         orderRepository.Update(order);
-        
+
         await orderRepository.SaveChangesAsync(cancellationToken);
     }
 }

@@ -18,7 +18,8 @@ public abstract class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>(
 {
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
-    public virtual async Task<ActionResult<TDto>> Create([FromBody] TCreateDto createDto, CancellationToken cancellationToken)
+    public virtual async Task<ActionResult<TDto>> Create([FromBody] TCreateDto createDto,
+        CancellationToken cancellationToken)
     {
         var entity = Mapper.Map<TEntity>(createDto);
         var created = await service.CreateAsync(entity, cancellationToken);
@@ -28,7 +29,8 @@ public abstract class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>(
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Manager,Chief")]
-    public virtual async Task<IActionResult> Update(int id, [FromBody] TUpdateDto updateDto, CancellationToken cancellationToken)
+    public virtual async Task<IActionResult> Update(int id, [FromBody] TUpdateDto updateDto,
+        CancellationToken cancellationToken)
     {
         var existing = await service.GetByIdAsync(id, cancellationToken);
         if (existing == null)

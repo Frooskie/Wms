@@ -9,8 +9,12 @@ public class RackService(IRepository<Rack> repository, IRackRepository rackRepos
     : CrudService<Rack>(repository), IRackService
 {
     public async Task<IEnumerable<Rack>> GetRacksWithShelvesAndCellsAsync(CancellationToken cancellationToken = default)
-        => await rackRepository.GetRacksWithShelvesAndCellsAsync(cancellationToken);
+    {
+        return await rackRepository.GetRacksWithShelvesAndCellsAsync(cancellationToken);
+    }
 
     public async Task<Rack?> GetRackWithShelvesAsync(int rackId, CancellationToken cancellationToken = default)
-        => await rackRepository.GetRackWithShelvesAsync(rackId, cancellationToken);
+    {
+        return await rackRepository.GetRackWithShelvesAsync(rackId, cancellationToken);
+    }
 }

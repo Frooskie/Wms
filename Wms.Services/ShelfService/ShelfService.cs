@@ -7,5 +7,4 @@ namespace Wms.Services.ShelfService;
 
 public class ShelfService(IRepository<Shelf> repository) : CrudService<Shelf>(repository), IShelfService
 {
-
 }

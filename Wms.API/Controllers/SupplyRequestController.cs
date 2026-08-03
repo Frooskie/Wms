@@ -16,7 +16,8 @@ public class SupplyRequestController(ISupplyRequestService service, IMapper mapp
 {
     [HttpPost]
     [Authorize(Roles = "StoreDirector")]
-    public async Task<ActionResult<SupplyRequestDto>> Create([FromBody] CreateSupplyRequestRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<SupplyRequestDto>> Create([FromBody] CreateSupplyRequestRequest request,
+        CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         var req = new SupplyRequest
@@ -37,13 +38,16 @@ public class SupplyRequestController(ISupplyRequestService service, IMapper mapp
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<SupplyRequestDto>>> GetAll([FromQuery] string? status, [FromQuery] string? createdBy, CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<SupplyRequestDto>>> GetAll([FromQuery] string? status,
+        [FromQuery] string? createdBy, CancellationToken cancellationToken)
     {
         var requests = await service.GetAllWithLinesAsync(cancellationToken);
+        
         if (!string.IsNullOrEmpty(status) && Enum.TryParse<SupplyRequestStatus>(status, true, out var statusEnum))
             requests = requests.Where(r => r.Status == statusEnum);
         if (!string.IsNullOrEmpty(createdBy))
             requests = requests.Where(r => r.CreatedBy == createdBy);
+        
         return Ok(mapper.Map<IEnumerable<SupplyRequestDto>>(requests));
     }
 

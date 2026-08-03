@@ -8,7 +8,7 @@ public class Zone
     public string Name { get; set; } = string.Empty;
     public ZoneType Type { get; set; }
     public int WarehouseId { get; set; }
-    
+
     public Warehouse Warehouse { get; set; } = null!;
     public ICollection<Rack> Racks { get; set; } = new List<Rack>();
 }

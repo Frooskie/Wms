@@ -7,7 +7,8 @@ namespace Wms.Infrastructure.Repositories;
 
 public class ProductRepository(ApplicationDbContext context) : Repository<Product>(context), IProductRepository
 {
-    public async Task<IEnumerable<Product>> GetProductsByNameAsync(string name, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Product>> GetProductsByNameAsync(string name,
+        CancellationToken cancellationToken = default)
     {
         return await Context.Products
             .Where(p => p.Name.Contains(name))
@@ -15,7 +16,8 @@ public class ProductRepository(ApplicationDbContext context) : Repository<Produc
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category,
+        CancellationToken cancellationToken = default)
     {
         return await Context.Products
             .Where(p => p.Category == category)

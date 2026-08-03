@@ -9,8 +9,12 @@ public class ZoneService(IRepository<Zone> repository, IZoneRepository zoneRepos
     : CrudService<Zone>(repository), IZoneService
 {
     public async Task<IEnumerable<Zone>> GetZonesWithDetailsAsync(CancellationToken cancellationToken = default)
-        => await zoneRepository.GetZonesWithDetailsAsync(cancellationToken);
-    
+    {
+        return await zoneRepository.GetZonesWithDetailsAsync(cancellationToken);
+    }
+
     public async Task<Zone?> GetZoneWithRacksAsync(int zoneId, CancellationToken cancellationToken = default)
-        => await zoneRepository.GetZoneWithRacksAsync(zoneId, cancellationToken);
+    {
+        return await zoneRepository.GetZoneWithRacksAsync(zoneId, cancellationToken);
+    }
 }

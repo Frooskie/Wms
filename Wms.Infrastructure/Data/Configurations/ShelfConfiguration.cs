@@ -12,7 +12,7 @@ public class ShelfConfiguration : IEntityTypeConfiguration<Shelf>
             .WithMany(r => r.Shelves)
             .HasForeignKey(s => s.RackId)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         builder.HasIndex(s => new { s.RackId, s.Number })
             .IsUnique();
     }

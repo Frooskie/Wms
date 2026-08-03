@@ -1,8 +1,8 @@
 ﻿using Wms.Core.Entities;
 
-namespace Wms.Core.Interfaces.Services;
+namespace Wms.Core.Interfaces.Repositories;
 
-public interface IProductService : ICrudService<Product>
+public interface IProductRepository : IRepository<Product>
 {
     Task<IEnumerable<Product>> GetProductsByNameAsync(string name, CancellationToken cancellationToken = default);
 

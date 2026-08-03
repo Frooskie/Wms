@@ -12,7 +12,7 @@ public class CellConfiguration : IEntityTypeConfiguration<Cell>
             .WithMany(s => s.Cells)
             .HasForeignKey(c => c.ShelfId)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         builder.HasIndex(c => new { c.ShelfId, c.Code })
             .IsUnique();
     }

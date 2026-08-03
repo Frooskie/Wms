@@ -16,7 +16,8 @@ public class SupplyOrderController(ISupplyOrderService service, IMapper mapper) 
 {
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
-    public async Task<ActionResult<SupplyOrderDto>> Create([FromBody] CreateSupplyOrderRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<SupplyOrderDto>> Create([FromBody] CreateSupplyOrderRequest request,
+        CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         var order = new SupplyOrder
@@ -47,8 +48,10 @@ public class SupplyOrderController(ISupplyOrderService service, IMapper mapper) 
     public async Task<ActionResult<SupplyOrderDto>> GetById(int id, CancellationToken cancellationToken)
     {
         var order = await service.GetByIdWithDetailsAsync(id, cancellationToken);
+
         if (order == null)
             return NotFound();
+
         return Ok(mapper.Map<SupplyOrderDto>(order));
     }
 

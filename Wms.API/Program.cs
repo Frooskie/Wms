@@ -6,11 +6,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Wms.API.MappingProfiles;
 using Wms.API.Middlewares;
-using Wms.Core.Options;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces;
 using Wms.Core.Interfaces.Repositories;
 using Wms.Core.Interfaces.Services;
+using Wms.Core.Options;
 using Wms.Infrastructure.Data;
 using Wms.Infrastructure.Data.Seed;
 using Wms.Infrastructure.Repositories;
@@ -43,7 +43,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Wms API", Version = "v1" });
-    
+
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "Введите токен в формате: Bearer {ваш_токен}",
@@ -52,7 +52,7 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-    
+
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -131,10 +131,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Wms API V1");
-    });
+    app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Wms API V1"); });
 }
 
 app.UseHttpsRedirection();

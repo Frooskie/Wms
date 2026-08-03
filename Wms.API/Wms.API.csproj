@@ -7,18 +7,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.29" />
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.29"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.29">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Wms.Infrastructure\Wms.Infrastructure.csproj" />
-      <ProjectReference Include="..\Wms.Services\Wms.Services.csproj" />
+        <ProjectReference Include="..\Wms.Infrastructure\Wms.Infrastructure.csproj"/>
+        <ProjectReference Include="..\Wms.Services\Wms.Services.csproj"/>
     </ItemGroup>
 
 </Project>

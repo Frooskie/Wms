@@ -17,21 +17,21 @@ public class JwtService(IOptions<JwtSettings> jwtSettings) : IJwtService
 
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Name, user.FullName)
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Email, user.Email),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(ClaimTypes.Name, user.FullName)
         };
-        
+
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettingsValue.Secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: jwtSettingsValue.Issuer,
-            audience: jwtSettingsValue.Audience,
-            claims: claims,
+            jwtSettingsValue.Issuer,
+            jwtSettingsValue.Audience,
+            claims,
             expires: DateTime.UtcNow.AddMinutes(jwtSettingsValue.ExpiryMinutes),
             signingCredentials: creds
         );

@@ -23,11 +23,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<SupplyOrder> SupplyOrders { get; set; }
     public DbSet<SupplyOrderLine> SupplyOrderLines { get; set; }
     public DbSet<Reservation> Reservations { get; set; }
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
+
         modelBuilder.ApplyConfiguration(new ZoneConfiguration());
         modelBuilder.ApplyConfiguration(new RackConfiguration());
         modelBuilder.ApplyConfiguration(new ShelfConfiguration());

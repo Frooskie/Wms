@@ -11,6 +11,6 @@ public class Receipt
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public int CreatedByUserId { get; set; }
     public string CreatedBy { get; set; } = string.Empty; // UserId
-    
+
     public ICollection<ReceiptLine> Lines { get; set; } = new List<ReceiptLine>();
 }

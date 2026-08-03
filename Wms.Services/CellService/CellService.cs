@@ -9,5 +9,7 @@ public class CellService(IRepository<Cell> repository, ICellRepository cellRepos
     : CrudService<Cell>(repository), ICellService
 {
     public async Task<bool> IsCellOccupiedAsync(int cellId, CancellationToken cancellationToken = default)
-        => await cellRepository.IsCellOccupiedAsync(cellId, cancellationToken);
+    {
+        return await cellRepository.IsCellOccupiedAsync(cellId, cancellationToken);
+    }
 }

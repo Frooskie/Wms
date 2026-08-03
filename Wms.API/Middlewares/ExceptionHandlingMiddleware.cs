@@ -22,7 +22,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/problem+json";
-        
+
         var statusCode = exception switch
         {
             NotFoundException => (int)HttpStatusCode.NotFound,

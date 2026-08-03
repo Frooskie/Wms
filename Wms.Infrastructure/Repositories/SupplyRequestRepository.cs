@@ -8,7 +8,8 @@ namespace Wms.Infrastructure.Repositories;
 public class SupplyRequestRepository(ApplicationDbContext context)
     : Repository<SupplyRequest>(context), ISupplyRequestRepository
 {
-    public async Task<SupplyRequest?> GetSupplyRequestWithLinesAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<SupplyRequest?> GetSupplyRequestWithLinesAsync(int id,
+        CancellationToken cancellationToken = default)
     {
         return await Context.SupplyRequests
             .Include(sr => sr.Lines)
@@ -16,7 +17,8 @@ public class SupplyRequestRepository(ApplicationDbContext context)
             .FirstOrDefaultAsync(sr => sr.Id == id, cancellationToken);
     }
 
-    public async Task<IEnumerable<SupplyRequest>> GetSupplyRequestsWithLinesAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<SupplyRequest>> GetSupplyRequestsWithLinesAsync(
+        CancellationToken cancellationToken = default)
     {
         return await Context.SupplyRequests
             .Include(sr => sr.Lines)

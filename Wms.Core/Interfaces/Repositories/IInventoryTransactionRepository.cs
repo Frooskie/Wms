@@ -4,5 +4,4 @@ namespace Wms.Core.Interfaces.Repositories;
 
 public interface IInventoryTransactionRepository : IRepository<InventoryTransaction>
 {
-
 }

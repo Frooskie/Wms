@@ -12,7 +12,7 @@ public class RackConfiguration : IEntityTypeConfiguration<Rack>
             .WithMany(z => z.Racks)
             .HasForeignKey(r => r.ZoneId)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         builder.HasIndex(r => new { r.ZoneId, r.Code })
             .IsUnique();
     }

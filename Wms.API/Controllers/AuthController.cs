@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Wms.API.DTOs;
 using Wms.API.DTOs.Auth;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces;
@@ -49,7 +48,7 @@ public class AuthController(
         var result = await userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
             return BadRequest(result.Errors);
-        
+
         if (!string.IsNullOrEmpty(request.Role))
         {
             var roleExists = await roleManager.RoleExistsAsync(request.Role);

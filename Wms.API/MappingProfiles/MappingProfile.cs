@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using Wms.Core.Enums;
-using Wms.API.DTOs;
 using Wms.API.DTOs.Batches;
 using Wms.API.DTOs.Products;
 using Wms.API.DTOs.Receipts;
@@ -17,16 +15,16 @@ public class MappingProfile : Profile
         CreateMap<Warehouse, WarehouseDto>();
         CreateMap<CreateWarehouseRequest, Warehouse>();
         CreateMap<UpdateWarehouseRequest, Warehouse>();
-        
+
         CreateMap<Zone, ZoneDto>()
             .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()));
         CreateMap<CreateZoneRequest, Zone>();
         CreateMap<UpdateZoneRequest, Zone>();
-        
+
         CreateMap<Rack, RackDto>();
         CreateMap<CreateRackRequest, Rack>();
         CreateMap<UpdateRackRequest, Rack>();
-        
+
         CreateMap<Shelf, ShelfDto>();
         CreateMap<CreateShelfRequest, Shelf>();
         CreateMap<UpdateShelfRequest, Shelf>();
@@ -38,7 +36,7 @@ public class MappingProfile : Profile
         CreateMap<Product, ProductDto>();
         CreateMap<CreateProductRequest, Product>();
         CreateMap<UpdateProductRequest, Product>();
-        
+
         CreateMap<CreateBatchRequest, Batch>();
         CreateMap<Batch, BatchDto>()
             .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
@@ -54,14 +52,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Quantity, opt => opt.Ignore())
             .ForMember(dest => dest.ReservedQuantity, opt => opt.Ignore())
             .ForMember(dest => dest.ReceivedDate, opt => opt.Ignore());
-        
+
         CreateMap<Receipt, ReceiptDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.Lines, opt => opt.MapFrom(src => src.Lines));
 
         CreateMap<ReceiptLine, ReceiptLineDto>()
             .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
-        
+
         CreateMap<SupplyRequest, SupplyRequestDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.Lines, opt => opt.MapFrom(src => src.Lines));

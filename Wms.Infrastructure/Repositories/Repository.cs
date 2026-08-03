@@ -8,8 +8,8 @@ namespace Wms.Infrastructure.Repositories;
 public class Repository<T>(ApplicationDbContext context) : IRepository<T>
     where T : class
 {
-    protected readonly ApplicationDbContext Context = context;
     private readonly DbSet<T> _dbSet = context.Set<T>();
+    protected readonly ApplicationDbContext Context = context;
 
     public virtual async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -21,7 +21,8 @@ public class Repository<T>(ApplicationDbContext context) : IRepository<T>
         return await _dbSet.AsNoTracking().ToListAsync(cancellationToken);
     }
 
-    public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+    public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate,
+        CancellationToken cancellationToken = default)
     {
         return await _dbSet.AsNoTracking().Where(predicate).ToListAsync(cancellationToken);
     }
@@ -41,7 +42,8 @@ public class Repository<T>(ApplicationDbContext context) : IRepository<T>
         _dbSet.Remove(entity);
     }
 
-    public virtual async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate,
+        CancellationToken cancellationToken = default)
     {
         return await _dbSet.AnyAsync(predicate, cancellationToken);
     }

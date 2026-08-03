@@ -11,7 +11,7 @@ public class Batch
     public DateTime ExpiryDate { get; set; }
     public DateTime ReceivedDate { get; set; }
     public int CellId { get; set; }
-    
+
     public Product Product { get; set; } = null!;
     public Cell Cell { get; set; } = null!;
 }

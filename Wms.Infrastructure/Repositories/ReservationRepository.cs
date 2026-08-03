@@ -8,7 +8,8 @@ namespace Wms.Infrastructure.Repositories;
 public class ReservationRepository(ApplicationDbContext context)
     : Repository<Reservation>(context), IReservationRepository
 {
-    public async Task<IEnumerable<Reservation>> GetReservationsBySupplyOrderAsync(int supplyOrderId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Reservation>> GetReservationsBySupplyOrderAsync(int supplyOrderId,
+        CancellationToken cancellationToken = default)
     {
         return await Context.Reservations
             .Where(r => r.SupplyOrderId == supplyOrderId)
@@ -17,7 +18,8 @@ public class ReservationRepository(ApplicationDbContext context)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task DeleteReservationsBySupplyOrderAsync(int supplyOrderId, CancellationToken cancellationToken = default)
+    public async Task DeleteReservationsBySupplyOrderAsync(int supplyOrderId,
+        CancellationToken cancellationToken = default)
     {
         await Context.Reservations
             .Where(r => r.SupplyOrderId == supplyOrderId)

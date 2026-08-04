@@ -6,7 +6,7 @@ public class InventoryTransaction
 {
     public int Id { get; set; }
     public int BatchId { get; set; }
-    public int QuantityChange { get; set; } // может быть отрицательным для расхода
+    public int QuantityChange { get; set; }
     public TransactionType TransactionType { get; set; }
     public int? DocumentId { get; set; } // ссылка на ReceiptId или SupplyOrderId
     public string UserId { get; set; } = string.Empty;
@@ -15,4 +15,7 @@ public class InventoryTransaction
     public int? NewCellId { get; set; }
 
     public Batch Batch { get; set; } = null!;
+    public ApplicationUser User { get; set; } = null!;
+    public Cell? OldCell { get; set; }
+    public Cell? NewCell { get; set; }
 }

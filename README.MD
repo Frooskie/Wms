@@ -42,10 +42,10 @@ https://localhost:5001/swagger
 
 Проект построен на **Clean Architecture** и состоит из четырёх слоёв:
 
-- **Warehouse.Core** — доменные сущности, интерфейсы репозиториев и сервисов, перечисления, исключения. (не зависит от внешних фреймворков)
-- **Warehouse.Infrastructure** — реализация репозиториев, DbContext, миграции, настройка Identity.
-- **Warehouse.Services** — бизнес-логика (сервисы), фоновые задачи.
-- **Warehouse.API** — контроллеры, DTO, AutoMapper, Swagger, настройка DI и JWT.
+- **Wms.Core** — доменные сущности, интерфейсы репозиториев и сервисов, перечисления, исключения. (не зависит от внешних фреймворков)
+- **Wms.Infrastructure** — реализация репозиториев, DbContext, миграции, настройка Identity.
+- **Wms.Services** — бизнес-логика (сервисы), фоновые задачи.
+- **Wms.API** — контроллеры, DTO, AutoMapper, Swagger, настройка DI и JWT.
 
 Зависимости строго направлены от API к Services, от Services к Core, от Infrastructure к Core. **Core** не имеет зависимостей от других слоёв.
 
@@ -54,7 +54,7 @@ https://localhost:5001/swagger
 ## 🗄️ Модель данных (основные сущности)
 
 - **Product** — шаблон товара (название, производитель, поставщик, категория, единица измерения, порог остатка).
-- **Warehouse → Zone → Rack → Shelf → Cell** — иерархия размещения.
+- **Wms → Zone → Rack → Shelf → Cell** — иерархия размещения.
 - **Batch** — партия товара (Product, Quantity, ReservedQuantity, цены, даты, CellId).
 - **Reservation** — резервы под заказы (BatchId, SupplyOrderId, Quantity).
 - **SupplyRequest** — заявка магазина (статусы Draft, Submitted, Approved, Completed, Rejected).
@@ -115,12 +115,12 @@ https://localhost:5001/swagger
 ## 📁 Структура решения
 
 ```
-Warehouse/
+Wms/
 ├── src/
-│ ├── Warehouse.API/ # Контроллеры, DTO, Middleware, DI, Program.cs
-│ ├── Warehouse.Core/ # Entities, Enums, Interfaces (Repositories, Services)
-│ ├── Warehouse.Infrastructure/# DbContext, Repositories, Migrations, Identity
-│ └── Warehouse.Services/ # Business logic services, Background services
+│ ├── Wms.API/ # Контроллеры, DTO, Middleware, DI, Program.cs
+│ ├── Wms.Core/ # Entities, Enums, Interfaces (Repositories, Services)
+│ ├── Wms.Infrastructure/# DbContext, Repositories, Migrations, Identity
+│ └── Wms.Services/ # Business logic services, Background services
 ├── tests/ # Unit-тесты
 ├── docs/ # Подробная документация
 │ ├── architecture.md
@@ -144,19 +144,15 @@ Warehouse/
 
 1. **Клонируйте репозиторий**
 2. **Настройте строку подключения**
-   В файле src/Warehouse.API/appsettings.json укажите вашу PostgreSQL-строку:
-   ```
-   git clone https://github.com/yourusername/warehouse.git
-   cd warehouse
-   ```
+   В файле src/Wms.API/appsettings.json укажите вашу PostgreSQL-строку
 3. **Примените миграции**
    В корне решения выполните:
    ```bash
-   dotnet ef database update --project src/Warehouse.Infrastructure --startup-project src/Warehouse.API
+   dotnet ef database update --project src/Wms.Infrastructure --startup-project src/Wms.API
    ```
 4. **Запустите приложение**
    ```bash
-   cd src/Warehouse.API
+   cd src/Wms.API
    dotnet run
    ```
 
@@ -164,5 +160,5 @@ Warehouse/
 
 При первом запуске автоматически создаются роли (Chief, Manager, Worker, StoreDirector) и пользователь Chief:
 
-- Email: chief@warehouse.com
+- Email: chief@wms.com
 - Пароль: Chief@123

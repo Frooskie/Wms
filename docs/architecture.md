@@ -30,7 +30,7 @@ API знает о Infrastructure только через DI (регистрац�
 
 ## 2. Описание слоёв
 
-### 2.1. Core (Warehouse.Core)
+### 2.1. Core (Wms.Core)
 
 **Назначение:** содержит бизнес-сущности и контракты (интерфейсы), не зависящие от внешнего мира.
 
@@ -49,25 +49,25 @@ API знает о Infrastructure только через DI (регистрац�
 
 ---
 
-### 2.2. Infrastructure (Warehouse.Infrastructure)
+### 2.2. Infrastructure (Wms.Infrastructure)
 
 **Назначение:** реализация доступа к данным и интеграция с внешними системами.
 
 **Содержит:**
 - **Data/ApplicationDbContext** – наследник `IdentityDbContext<ApplicationUser>`, объединяет Identity и бизнес-таблицы.
-- **Configurations** – Fluent API-конфигурации сущностей (связи, индексы, ограничения).
+- **Data/Configurations** – Fluent API-конфигурации сущностей (связи, индексы, ограничения).
 - **Repositories** – реализация обобщённого репозитория `Repository<T>` и специфических репозиториев (`ZoneRepository`, `RackRepository`, `CellRepository`, `ProductRepository`).
 - **Migrations** – миграции Entity Framework Core.
-- **Seed/DbInitializer** – инициализация ролей и учётной записи Chief.
+- **Data/Seed/DbInitializer** – инициализация ролей и учётной записи Chief.
 
 **Зависимости:**
 - `Npgsql.EntityFrameworkCore.PostgreSQL` – провайдер PostgreSQL.
 - `Microsoft.AspNetCore.Identity.EntityFrameworkCore` – интеграция Identity.
-- `Warehouse.Core` – реализует интерфейсы репозиториев.
+- `Wms.Core` – реализует интерфейсы репозиториев.
 
 ---
 
-### 2.3. Services (Warehouse.Services)
+### 2.3. Services (Wms.Services)
 
 **Назначение:** реализация бизнес-логики приложения.
 
@@ -82,7 +82,7 @@ API знает о Infrastructure только через DI (регистрац�
 - **Валидаторы** – если используем FluentValidation.
 
 **Зависимости:**
-- `Warehouse.Core` – интерфейсы сервисов и репозиториев.
+- `Wms.Core` – интерфейсы сервисов и репозиториев.
 - `Microsoft.Extensions.Options` – для доступа к конфигурации `JwtSettings`.
 - `System.IdentityModel.Tokens.Jwt` – для генерации токенов.
 - `Microsoft.AspNetCore.Identity` – для работы с `UserManager` и `RoleManager` (используются в `AuthController`, но сервис `JwtService` получает только `ApplicationUser` и роли как строки, не завися от Identity напрямую).
@@ -91,7 +91,7 @@ API знает о Infrastructure только через DI (регистрац�
 
 ---
 
-### 2.4. API (Warehouse.API)
+### 2.4. API (Wms.API)
 
 **Назначение:** точка входа в приложение, предоставление RESTful API.
 
@@ -105,8 +105,8 @@ API знает о Infrastructure только через DI (регистрац�
 - **Program.cs** – настройка хоста, DI, конвейер middleware.
 
 **Зависимости:**
-- `Warehouse.Services` – для внедрения сервисов.
-- `Warehouse.Infrastructure` – для регистрации DbContext и репозиториев (через DI).
+- `Wms.Services` – для внедрения сервисов.
+- `Wms.Infrastructure` – для регистрации DbContext и репозиториев (через DI).
 - `AutoMapper.Extensions.Microsoft.DependencyInjection` – для маппинга.
 - `Swashbuckle.AspNetCore` – для Swagger/OpenAPI.
 - `Microsoft.AspNetCore.Authentication.JwtBearer` – для JWT-аутентификации.

@@ -1,9 +1,9 @@
 ﻿namespace Wms.API.DTOs.WarehouseStructure;
 
-public class CellDto
+public record CellDto
 {
-    public int Id { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public int ShelfId { get; set; }
-    public bool IsOccupied { get; set; }
+    public int Id { get; init; }
+    public string Code { get; init; } = string.Empty;
+    public int ShelfId { get; init; }
+    public bool IsOccupied { get; init; }
 }

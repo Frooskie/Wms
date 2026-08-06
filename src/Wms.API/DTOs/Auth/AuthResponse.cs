@@ -1,9 +1,9 @@
 ﻿namespace Wms.API.DTOs.Auth;
 
-public class AuthResponse
+public record AuthResponse
 {
-    public string Token { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string FullName { get; set; } = string.Empty;
-    public List<string> Roles { get; set; } = new();
+    public string Token { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+    public string FullName { get; init; } = string.Empty;
+    public List<string> Roles { get; init; } = [];
 }

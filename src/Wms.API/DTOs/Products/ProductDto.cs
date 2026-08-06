@@ -1,12 +1,12 @@
 ﻿namespace Wms.API.DTOs.Products;
 
-public class ProductDto
+public record ProductDto
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string? Manufacturer { get; set; }
-    public string? Supplier { get; set; }
-    public string? Category { get; set; }
-    public string Unit { get; set; } = string.Empty;
-    public decimal MinStockThreshold { get; set; }
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string? Manufacturer { get; init; }
+    public string? Supplier { get; init; }
+    public string? Category { get; init; }
+    public string Unit { get; init; } = string.Empty;
+    public decimal MinStockThreshold { get; init; }
 }

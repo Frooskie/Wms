@@ -1,6 +1,6 @@
 ﻿namespace Wms.API.DTOs.Receipts;
 
-public class ReceiveReceiptRequest
+public record ReceiveReceiptRequest
 {
-    public List<ReceiveReceiptLineRequest> Lines { get; set; } = [];
+    public List<ReceiveReceiptLineRequest> Lines { get; init; } = [];
 }

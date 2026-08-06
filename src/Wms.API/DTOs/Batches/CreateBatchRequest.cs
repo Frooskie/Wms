@@ -1,11 +1,11 @@
 ﻿namespace Wms.API.DTOs.Batches;
 
-public class CreateBatchRequest
+public record CreateBatchRequest
 {
-    public int ProductId { get; set; }
-    public int Quantity { get; set; }
-    public decimal PurchasePrice { get; set; }
-    public DateTime ProductionDate { get; set; }
-    public DateTime ExpiryDate { get; set; }
-    public int CellId { get; set; }
+    public int ProductId { get; init; }
+    public int Quantity { get; init; }
+    public decimal PurchasePrice { get; init; }
+    public DateTime ProductionDate { get; init; }
+    public DateTime ExpiryDate { get; init; }
+    public int CellId { get; init; }
 }

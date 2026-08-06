@@ -1,7 +1,7 @@
 ﻿namespace Wms.API.DTOs.Receipts;
 
-public class ReceiptLineRequest
+public record ReceiptLineRequest
 {
-    public int ProductId { get; set; }
-    public int ExpectedQuantity { get; set; }
+    public int ProductId { get; init; }
+    public int ExpectedQuantity { get; init; }
 }

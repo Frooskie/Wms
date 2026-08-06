@@ -1,8 +1,8 @@
 ﻿namespace Wms.API.DTOs.Batches;
 
-public class UpdateBatchRequest
+public record UpdateBatchRequest
 {
-    public decimal? PurchasePrice { get; set; }
-    public DateTime? ProductionDate { get; set; }
-    public DateTime? ExpiryDate { get; set; }
+    public decimal? PurchasePrice { get; init; }
+    public DateTime? ProductionDate { get; init; }
+    public DateTime? ExpiryDate { get; init; }
 }

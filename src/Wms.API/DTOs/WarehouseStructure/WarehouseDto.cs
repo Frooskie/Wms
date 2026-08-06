@@ -1,9 +1,9 @@
 ﻿namespace Wms.API.DTOs.WarehouseStructure;
 
-public class WarehouseDto
+public record WarehouseDto
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string? Address { get; set; }
-    public string? ContactPhone { get; set; }
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string? Address { get; init; }
+    public string? ContactPhone { get; init; }
 }

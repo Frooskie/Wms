@@ -1,9 +1,9 @@
 ﻿namespace Wms.API.DTOs.WarehouseStructure;
 
-public class RackDto
+public record RackDto
 {
-    public int Id { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public int ZoneId { get; set; }
-    public List<ShelfDto> Shelves { get; set; } = [];
+    public int Id { get; init; }
+    public string Code { get; init; } = string.Empty;
+    public int ZoneId { get; init; }
+    public List<ShelfDto> Shelves { get; init; } = [];
 }

@@ -1,7 +1,7 @@
 ﻿namespace Wms.API.DTOs.WarehouseStructure;
 
-public class UpdateShelfRequest
+public record UpdateShelfRequest
 {
-    public int? Number { get; set; }
-    public int? RackId { get; set; }
+    public int? Number { get; init; }
+    public int? RackId { get; init; }
 }

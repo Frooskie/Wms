@@ -1,8 +1,8 @@
 ﻿namespace Wms.API.DTOs.WarehouseStructure;
 
-public class UpdateZoneRequest
+public record UpdateZoneRequest
 {
-    public string? Name { get; set; }
-    public string? Type { get; set; }
-    public int? WarehouseId { get; set; }
+    public string? Name { get; init; }
+    public string? Type { get; init; }
+    public int? WarehouseId { get; init; }
 }

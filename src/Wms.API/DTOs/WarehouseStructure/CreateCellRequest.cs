@@ -1,7 +1,7 @@
 ﻿namespace Wms.API.DTOs.WarehouseStructure;
 
-public class CreateCellRequest
+public record CreateCellRequest
 {
-    public string Code { get; set; } = string.Empty; // например, "A-1-1"
-    public int ShelfId { get; set; }
+    public string Code { get; init; } = string.Empty; // например, "A-1-1"
+    public int ShelfId { get; init; }
 }

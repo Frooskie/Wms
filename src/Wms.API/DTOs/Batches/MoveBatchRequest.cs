@@ -1,6 +1,6 @@
 ﻿namespace Wms.API.DTOs.Batches;
 
-public class MoveBatchRequest
+public record MoveBatchRequest
 {
-    public int CellId { get; set; }
+    public int CellId { get; init; }
 }

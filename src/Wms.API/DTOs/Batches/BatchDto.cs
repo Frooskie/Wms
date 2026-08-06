@@ -1,20 +1,20 @@
 ﻿namespace Wms.API.DTOs.Batches;
 
-public class BatchDto
+public record BatchDto
 {
-    public int Id { get; set; }
-    public int ProductId { get; set; }
-    public string ProductName { get; set; } = string.Empty;
-    public int Quantity { get; set; }
-    public int ReservedQuantity { get; set; }
+    public int Id { get; init; }
+    public int ProductId { get; init; }
+    public string ProductName { get; init; } = string.Empty;
+    public int Quantity { get; init; }
+    public int ReservedQuantity { get; init; }
     public int AvailableQuantity => Quantity - ReservedQuantity;
-    public decimal PurchasePrice { get; set; }
-    public DateTime ProductionDate { get; set; }
-    public DateTime ExpiryDate { get; set; }
-    public DateTime ReceivedDate { get; set; }
-    public int CellId { get; set; }
-    public string CellCode { get; set; } = string.Empty;
-    public string ShelfNumber { get; set; } = string.Empty;
-    public string RackCode { get; set; } = string.Empty;
-    public string ZoneName { get; set; } = string.Empty;
+    public decimal PurchasePrice { get; init; }
+    public DateTime ProductionDate { get; init; }
+    public DateTime ExpiryDate { get; init; }
+    public DateTime ReceivedDate { get; init; }
+    public int CellId { get; init; }
+    public string CellCode { get; init; } = string.Empty;
+    public string ShelfNumber { get; init; } = string.Empty;
+    public string RackCode { get; init; } = string.Empty;
+    public string ZoneName { get; init; } = string.Empty;
 }

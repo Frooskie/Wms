@@ -1,9 +1,9 @@
 ﻿namespace Wms.API.DTOs.Receipts;
 
-public class ReceiptLineDto
+public record ReceiptLineDto
 {
-    public int Id { get; set; }
-    public int ProductId { get; set; }
-    public string ProductName { get; set; } = string.Empty;
-    public int ExpectedQuantity { get; set; }
+    public int Id { get; init; }
+    public int ProductId { get; init; }
+    public string ProductName { get; init; } = string.Empty;
+    public int ExpectedQuantity { get; init; }
 }

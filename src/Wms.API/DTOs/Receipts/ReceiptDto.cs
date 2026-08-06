@@ -1,13 +1,13 @@
 ﻿namespace Wms.API.DTOs.Receipts;
 
-public class ReceiptDto
+public record ReceiptDto
 {
-    public int Id { get; set; }
-    public string Supplier { get; set; } = string.Empty;
-    public string? Comment { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
-    public string CreatedBy { get; set; } = string.Empty;
+    public int Id { get; init; }
+    public string Supplier { get; init; } = string.Empty;
+    public string? Comment { get; init; }
+    public string Status { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
+    public string CreatedBy { get; init; } = string.Empty;
 
-    public List<ReceiptLineDto> Lines { get; set; } = [];
+    public List<ReceiptLineDto> Lines { get; init; } = [];
 }

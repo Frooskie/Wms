@@ -1,8 +1,8 @@
 ﻿namespace Wms.API.DTOs.WarehouseStructure;
 
-public class CreateZoneRequest
+public record CreateZoneRequest
 {
-    public string Name { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty; // "Normal", "Fridge", "Freezer"
-    public int WarehouseId { get; set; }
+    public string Name { get; init; } = string.Empty;
+    public string Type { get; init; } = string.Empty; // "Normal", "Fridge", "Freezer"
+    public int WarehouseId { get; init; }
 }

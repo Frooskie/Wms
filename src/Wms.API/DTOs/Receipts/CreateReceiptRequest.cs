@@ -1,8 +1,8 @@
 ﻿namespace Wms.API.DTOs.Receipts;
 
-public class CreateReceiptRequest
+public record CreateReceiptRequest
 {
-    public string Supplier { get; set; } = string.Empty;
+    public string Supplier { get; init; } = string.Empty;
 
-    public List<ReceiptLineRequest> Lines { get; set; } = [];
+    public List<ReceiptLineRequest> Lines { get; init; } = [];
 }

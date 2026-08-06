@@ -1,11 +1,11 @@
 ﻿namespace Wms.API.DTOs.Products;
 
-public class UpdateProductRequest
+public record UpdateProductRequest
 {
-    public string? Name { get; set; }
-    public string? Manufacturer { get; set; }
-    public string? Supplier { get; set; }
-    public string? Category { get; set; }
-    public string? Unit { get; set; }
-    public decimal? MinStockThreshold { get; set; }
+    public string? Name { get; init; }
+    public string? Manufacturer { get; init; }
+    public string? Supplier { get; init; }
+    public string? Category { get; init; }
+    public string? Unit { get; init; }
+    public decimal? MinStockThreshold { get; init; }
 }

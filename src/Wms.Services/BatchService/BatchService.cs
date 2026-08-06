@@ -1,4 +1,5 @@
 ﻿using Wms.Core.Entities;
+using Wms.Core.Enums;
 using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Repositories;
 using Wms.Core.Interfaces.Services;
@@ -6,13 +7,19 @@ using Wms.Services.Base;
 
 namespace Wms.Services.BatchService;
 
-public class BatchService(IBatchRepository batchRepository, ICellRepository cellRepository)
+public class BatchService(
+    IBatchRepository batchRepository,
+    ICellRepository cellRepository,
+    IInventoryTransactionService transactionService)
     : ReadOnlyService<Batch>(batchRepository), IBatchService
 {
-    public async Task<Batch> CreateBatchAsync(Batch batch, CancellationToken cancellationToken = default)
+    public async Task<Batch> CreateBatchAsync(
+        Batch batch,
+        string userId,
+        int? documentId = null,
+        CancellationToken cancellationToken = default)
     {
         var isOccupied = await batchRepository.IsCellOccupiedByOtherBatchAsync(batch.CellId, null, cancellationToken);
-
         if (isOccupied)
             throw new BusinessRuleException("Cell is already occupied by another batch.");
 
@@ -24,6 +31,15 @@ public class BatchService(IBatchRepository batchRepository, ICellRepository cell
         cellRepository.Update(cell);
 
         await _repository.AddAsync(batch, cancellationToken);
+        
+        await transactionService.AddTransactionAsync(
+            batch.Id,
+            batch.Quantity,
+            TransactionType.In,
+            userId,
+            documentId,
+            cancellationToken: cancellationToken);
+        
         await _repository.SaveChangesAsync(cancellationToken);
 
         return batch;
@@ -46,7 +62,11 @@ public class BatchService(IBatchRepository batchRepository, ICellRepository cell
         await _repository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task MoveBatchAsync(int batchId, int newCellId, CancellationToken cancellationToken = default)
+    public async Task MoveBatchAsync(
+        int batchId,
+        int newCellId,
+        string userId,
+        CancellationToken cancellationToken = default)
     {
         var batch = await batchRepository.GetBatchWithProductAndCellAsync(batchId, cancellationToken);
         if (batch == null)
@@ -72,6 +92,17 @@ public class BatchService(IBatchRepository batchRepository, ICellRepository cell
 
         batch.CellId = newCellId;
         batchRepository.Update(batch);
+        
+        await transactionService.AddTransactionAsync(
+            batch.Id,
+            0,
+            TransactionType.Move,
+            userId,
+            null, // документ на перемещение не предусмотрен
+            oldCell?.Id,
+            newCell.Id,
+            cancellationToken);
+        
         await batchRepository.SaveChangesAsync(cancellationToken);
     }
 

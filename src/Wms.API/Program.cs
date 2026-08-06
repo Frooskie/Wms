@@ -17,6 +17,7 @@ using Wms.Infrastructure.Repositories;
 using Wms.Services.Auth;
 using Wms.Services.BatchService;
 using Wms.Services.CellService;
+using Wms.Services.InventoryTransactionService;
 using Wms.Services.ProductService;
 using Wms.Services.RackService;
 using Wms.Services.ReceiptService;
@@ -113,6 +114,7 @@ builder.Services.AddScoped<ICellService, CellService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IBatchService, BatchService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
+builder.Services.AddScoped<IInventoryTransactionService, InventoryTransactionService>();
 
 builder.Services.AddCors(options =>
 {

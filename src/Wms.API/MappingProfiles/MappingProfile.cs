@@ -3,6 +3,7 @@ using Wms.API.DTOs.Batches;
 using Wms.API.DTOs.Products;
 using Wms.API.DTOs.Receipts;
 using Wms.API.DTOs.Supply;
+using Wms.API.DTOs.Transactions;
 using Wms.API.DTOs.WarehouseStructure;
 using Wms.Core.Entities;
 
@@ -76,5 +77,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
 
         CreateMap<Reservation, ReservationDto>();
+        
+        CreateMap<InventoryTransaction, InventoryTransactionResponseDto>()
+            .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Batch.Product.Name))
+            .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.TransactionType.ToString()))
+            .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.User.FullName))
+            .ForMember(dest => dest.OldCellCode, opt => opt.MapFrom(src => src.OldCell != null ? src.OldCell.Code : null))
+            .ForMember(dest => dest.NewCellCode, opt => opt.MapFrom(src => src.NewCell != null ? src.NewCell.Code : null));
     }
 }

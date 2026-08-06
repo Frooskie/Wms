@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Security.Claims;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Batches;
@@ -42,8 +43,10 @@ public class BatchController(IBatchService batchService, IMapper mapper) : Contr
     public async Task<IActionResult> CreateBatch([FromBody] CreateBatchRequest request,
         CancellationToken cancellationToken)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+        
         var batch = mapper.Map<Batch>(request);
-        await batchService.CreateBatchAsync(batch, cancellationToken);
+        await batchService.CreateBatchAsync(batch, userId, null, cancellationToken);
 
         var dto = mapper.Map<BatchDto>(batch);
         return CreatedAtAction(nameof(GetBatch), new { id = batch.Id }, dto);
@@ -54,7 +57,9 @@ public class BatchController(IBatchService batchService, IMapper mapper) : Contr
     public async Task<IActionResult> MoveBatch(int id, [FromBody] MoveBatchRequest request,
         CancellationToken cancellationToken)
     {
-        await batchService.MoveBatchAsync(id, request.CellId, cancellationToken);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+        
+        await batchService.MoveBatchAsync(id, request.CellId, userId, cancellationToken);
         return NoContent();
     }
 

@@ -11,7 +11,7 @@ public class SupplyOrderService(
     IRepository<SupplyOrderLine> orderLineRepository,
     IBatchRepository batchRepository,
     IReservationRepository reservationRepository,
-    IInventoryTransactionRepository transactionRepository,
+    IInventoryTransactionService transactionService,
     ICellRepository cellRepository,
     IProductRepository productRepository)
     : ISupplyOrderService
@@ -138,7 +138,7 @@ public class SupplyOrderService(
         if (reservations.Count == 0)
             throw new BusinessRuleException("Order has no reservations. Cannot ship.");
 
-        // Группируем резервы по партии для оптимизации
+        // Группируем резервы по партии
         var groupedReservations = reservations
             .GroupBy(r => r.BatchId)
             .Select(g => new
@@ -149,7 +149,6 @@ public class SupplyOrderService(
             })
             .ToList();
 
-        var transactions = new List<InventoryTransaction>();
         var batchesToUpdate = new List<Batch>();
         var cellsToUpdate = new List<Cell>();
 
@@ -174,27 +173,20 @@ public class SupplyOrderService(
             }
 
             batchesToUpdate.Add(batch);
-
-            // Создаём транзакцию списания
-            var transaction = new InventoryTransaction
-            {
-                BatchId = batch.Id,
-                QuantityChange = -group.TotalReserved,
-                TransactionType = TransactionType.Out,
-                DocumentId = orderId,
-                UserId = userId,
-                Timestamp = DateTime.UtcNow
-            };
-            transactions.Add(transaction);
+            
+            await transactionService.AddTransactionAsync(
+                batch.Id,
+                -group.TotalReserved,
+                TransactionType.Out,
+                userId,
+                orderId,
+                cancellationToken: cancellationToken);
         }
 
-        // Удаляем все резервы этого заказа
+        // Удаляем резервы
         foreach (var reservation in reservations)
             reservationRepository.Delete(reservation);
-
-        foreach (var transaction in transactions)
-            await transactionRepository.AddAsync(transaction, cancellationToken);
-
+        
         foreach (var batch in batchesToUpdate)
             batchRepository.Update(batch);
 
@@ -204,7 +196,7 @@ public class SupplyOrderService(
         order.Status = SupplyOrderStatus.Shipped;
         order.ShippedAt = DateTime.UtcNow;
         orderRepository.Update(order);
-
+        
         await orderRepository.SaveChangesAsync(cancellationToken);
     }
 }

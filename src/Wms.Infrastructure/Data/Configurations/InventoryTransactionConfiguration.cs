@@ -8,15 +8,48 @@ public class InventoryTransactionConfiguration : IEntityTypeConfiguration<Invent
 {
     public void Configure(EntityTypeBuilder<InventoryTransaction> builder)
     {
-        builder.HasKey(it => it.Id);
-        builder.HasOne(it => it.Batch)
+        builder.ToTable("InventoryTransactions");
+
+        builder.HasKey(e => e.Id);
+
+        builder.Property(e => e.QuantityChange)
+            .IsRequired();
+
+        builder.Property(e => e.TransactionType)
+            .IsRequired();
+
+        builder.Property(e => e.UserId)
+            .IsRequired()
+            .HasMaxLength(450);
+
+        builder.Property(e => e.Timestamp)
+            .IsRequired()
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        builder.HasIndex(e => e.BatchId);
+        builder.HasIndex(e => e.TransactionType);
+        builder.HasIndex(e => e.Timestamp);
+        builder.HasIndex(e => e.UserId);
+        builder.HasIndex(e => e.DocumentId);
+
+        builder.HasOne(e => e.Batch)
             .WithMany()
-            .HasForeignKey(it => it.BatchId)
+            .HasForeignKey(e => e.BatchId)
             .OnDelete(DeleteBehavior.Restrict);
-        builder.Property(it => it.QuantityChange).IsRequired();
-        builder.Property(it => it.UserId).IsRequired().HasMaxLength(450);
-        builder.HasIndex(it => it.BatchId);
-        builder.HasIndex(it => it.Timestamp);
-        builder.HasIndex(it => it.TransactionType);
+
+        builder.HasOne(e => e.OldCell)
+            .WithMany()
+            .HasForeignKey(e => e.OldCellId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(e => e.NewCell)
+            .WithMany()
+            .HasForeignKey(e => e.NewCellId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(e => e.User)
+            .WithMany()
+            .HasForeignKey(e => e.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

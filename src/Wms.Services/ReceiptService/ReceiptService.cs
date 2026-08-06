@@ -11,9 +11,7 @@ public class ReceiptService(
     IRepository<ReceiptLine> receiptLineRepository,
     IProductRepository productRepository,
     ICellRepository cellRepository,
-    IBatchService batchService,
-    IInventoryTransactionRepository transactionRepository,
-    IRepository<Batch> batchRepository)
+    IBatchService batchService)
     : IReceiptService
 {
     public async Task<Receipt> CreateReceiptAsync(Receipt receipt, List<ReceiptLine> lines,
@@ -44,7 +42,8 @@ public class ReceiptService(
 
     public async Task ReceiveReceiptAsync(int receiptId,
         List<(int productId, int actualQuantity, int cellId, DateTime expiryDate, decimal purchasePrice)> receiveLines,
-        string userId, CancellationToken cancellationToken = default)
+        string userId,
+        CancellationToken cancellationToken = default)
     {
         var receipt = await receiptRepository.GetReceiptWithLinesAsync(receiptId, cancellationToken);
 
@@ -77,19 +76,7 @@ public class ReceiptService(
                 CellId = line.cellId
             };
 
-            await batchService.CreateBatchAsync(batch, cancellationToken);
-
-            // Транзакция прихода
-            var transaction = new InventoryTransaction
-            {
-                BatchId = batch.Id,
-                QuantityChange = line.actualQuantity,
-                TransactionType = TransactionType.In,
-                DocumentId = receiptId,
-                UserId = userId,
-                Timestamp = DateTime.UtcNow
-            };
-            await transactionRepository.AddAsync(transaction, cancellationToken);
+            await batchService.CreateBatchAsync(batch, userId, receiptId, cancellationToken);
         }
 
         // Проверка расхождений

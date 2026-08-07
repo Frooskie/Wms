@@ -37,11 +37,11 @@ API знает о Infrastructure только через DI (регистрац�
 **Содержит:**
 - **Entities** – доменные модели: `Warehouse`, `Zone`, `Rack`, `Shelf`, `Cell`, `Product`, `Batch`, `InventoryTransaction`, `ApplicationUser` (наследует `IdentityUser`).
 - **Enums** – перечисления: `ZoneType`, `TransactionType`, статусы документов.
-- **Interfaces** – контракты для репозиториев (`IRepository<T>`, `IZoneRepository`, `IRackRepository`, `ICellRepository`, `IProductRepository` и др.) и сервисов. Базовые интерфейсы сервисов:
+- **Interfaces** – контракты для репозиториев и сервисов. Базовые интерфейсы сервисов:
   - `IReadOnlyService<T>` – только методы чтения (`GetAll`, `GetById`).
   - `ICrudService<T>` – наследует `IReadOnlyService<T>` и добавляет методы изменения (`Create`, `Update`, `Delete`).
 - **Options** – классы конфигурации (например, `JwtSettings`).
-- **Exceptions** – пользовательские исключения (если необходимы).
+- **Exceptions** – пользовательские исключения.
 
 **Зависимости:**
 - `Microsoft.AspNetCore.Identity.EntityFrameworkCore` – для `ApplicationUser` (компромисс, позволяющий использовать Identity без привязки к Infrastructure).
@@ -77,6 +77,7 @@ API знает о Infrastructure только через DI (регистрац�
 - **Специфические сервисы-справочники** (`ProductService`, `WarehouseService`, `ZoneService`, `RackService`, `ShelfService`, `CellService`) наследуют `CrudService<T>` и реализуют свои интерфейсы. Они могут добавлять уникальные методы (например, `GetByCategoryAsync` для `ProductService`).
 - **Сервисы для сущностей со статусами** (`ReceiptService`, `SupplyRequestService`, `SupplyOrderService`) не используют общие базовые классы, а реализуют кастомные интерфейсы с явными бизнес-операциями.
 - **Сервис для Batch** (`BatchService`) наследует `ReadOnlyService<Batch>` и реализует `IBatchService`, добавляя только методы `MoveBatchAsync` и `GetBatchesWithFiltersAsync`.
+- **Сервис аудита (`InventoryTransactionService`)** реализует `IInventoryTransactionService`, обеспечивая создание записей аудита и их фильтрацию для просмотра.
 - **Auth/JwtService** – реализация генерации JWT-токенов.
 - **BackgroundServices** – фоновые задачи (уведомления о сроках годности, низких остатках).
 - **Валидаторы** – если используем FluentValidation.
@@ -96,7 +97,7 @@ API знает о Infrastructure только через DI (регистрац�
 **Назначение:** точка входа в приложение, предоставление RESTful API.
 
 **Содержит:**
-- **Controllers** – `AuthController`, `WarehouseController`, `ZoneController`, `RackController`, `ShelfController`, `CellController`, `ProductController`.
+- **Controllers** – контроллеры.
 - **DTOs** – объекты передачи данных (запросы/ответы).
 - **MappingProfiles** – настройки AutoMapper для преобразования Entity ↔ DTO.
 - **Options** – классы для привязки конфигурации.
@@ -251,6 +252,9 @@ SupplyRequest ──< RequestLine (продукты)
 
 - **Списание просрочки:**  
   Фоновый сервис находит партии с `ExpiryDate <= Today`, создаёт уведомления менеджерам. При ручном списании создаётся транзакция `WriteOff`, уменьшается `Quantity`, ячейка освобождается.
+
+- **Аудит (InventoryTransaction):**  
+  Каждая операция, меняющая `Quantity` (приход, расход, списание) или перемещающая партию (`Move`), создаёт запись в `InventoryTransaction` с типом `In`, `Out`, `Move` или `WriteOff`. Запись содержит `UserId`, `DocumentId` (ссылка на Receipt или SupplyOrder), временную метку, а для перемещений – старую и новую ячейки.
 
 - **Уведомления:**  
   Фоновый сервис проверяет срок годности (≤3 дня) и остатки (ниже порога) и создаёт уведомления для менеджеров.

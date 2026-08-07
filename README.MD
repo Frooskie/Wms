@@ -125,10 +125,7 @@ Wms/
 ├── docs/ # Подробная документация
 │ ├── architecture.md
 │ ├── database-schema.md
-│ ├── api-endpoints.md
-│ ├── business-rules.md
-│ ├── deployment.md
-│ └── decisions.md
+│ └── business-rules.md
 ├── README.md
 └── LICENSE
 ```

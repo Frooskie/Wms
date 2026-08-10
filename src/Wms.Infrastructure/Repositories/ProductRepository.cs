@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Wms.Core.DTOs;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces.Repositories;
 using Wms.Infrastructure.Data;
@@ -23,5 +24,16 @@ public class ProductRepository(ApplicationDbContext context) : Repository<Produc
             .Where(p => p.Category == category)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+    }
+    
+    public async Task<IEnumerable<LowStockProductDto>> GetLowStockProductsAsync(CancellationToken cancellationToken = default)
+    {
+        var query = from p in Context.Products
+            join b in Context.Batches on p.Id equals b.ProductId into batchesGroup
+            let totalAvailable = batchesGroup.Sum(b => b.Quantity - b.ReservedQuantity)
+            where totalAvailable < p.MinStockThreshold
+            select new LowStockProductDto(p.Id, p.Name, p.MinStockThreshold, totalAvailable);
+
+        return await query.AsNoTracking().ToListAsync(cancellationToken);
     }
 }

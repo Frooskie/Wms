@@ -23,6 +23,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<SupplyOrder> SupplyOrders { get; set; }
     public DbSet<SupplyOrderLine> SupplyOrderLines { get; set; }
     public DbSet<Reservation> Reservations { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -41,5 +42,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.ApplyConfiguration(new SupplyOrderConfiguration());
         modelBuilder.ApplyConfiguration(new SupplyOrderLineConfiguration());
         modelBuilder.ApplyConfiguration(new ReservationConfiguration());
+        modelBuilder.ApplyConfiguration(new NotificationConfiguration());
     }
 }

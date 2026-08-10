@@ -15,9 +15,11 @@ using Wms.Infrastructure.Data;
 using Wms.Infrastructure.Data.Seed;
 using Wms.Infrastructure.Repositories;
 using Wms.Services.Auth;
+using Wms.Services.BackgroundServices;
 using Wms.Services.BatchService;
 using Wms.Services.CellService;
 using Wms.Services.InventoryTransactionService;
+using Wms.Services.NotificationService;
 using Wms.Services.ProductService;
 using Wms.Services.RackService;
 using Wms.Services.ReceiptService;
@@ -104,6 +106,7 @@ builder.Services.AddScoped<IInventoryTransactionRepository, InventoryTransaction
 builder.Services.AddScoped<ISupplyRequestRepository, SupplyRequestRepository>();
 builder.Services.AddScoped<ISupplyOrderRepository, SupplyOrderRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
@@ -115,6 +118,9 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IBatchService, BatchService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddScoped<IInventoryTransactionService, InventoryTransactionService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+builder.Services.AddHostedService<NotificationBackgroundService>();
 
 builder.Services.AddCors(options =>
 {

@@ -35,7 +35,8 @@ API знает о Infrastructure только через DI (регистрац�
 **Назначение:** содержит бизнес-сущности и контракты (интерфейсы), не зависящие от внешнего мира.
 
 **Содержит:**
-- **Entities** – доменные модели: `Warehouse`, `Zone`, `Rack`, `Shelf`, `Cell`, `Product`, `Batch`, `InventoryTransaction`, `ApplicationUser` (наследует `IdentityUser`).
+- **DTOs** - DTO для передачи данных между слоями (например, `ExpiringBatchInfo`, `LowStockProductInfo`) 
+- **Entities** – доменные модели: `Warehouse`, `Zone`, `Rack`, `Shelf`, `Cell`, `Product`, `Batch`, `InventoryTransaction`, `Notification`, `ApplicationUser` (наследует `IdentityUser`).
 - **Enums** – перечисления: `ZoneType`, `TransactionType`, статусы документов.
 - **Interfaces** – контракты для репозиториев и сервисов. Базовые интерфейсы сервисов:
   - `IReadOnlyService<T>` – только методы чтения (`GetAll`, `GetById`).
@@ -78,6 +79,8 @@ API знает о Infrastructure только через DI (регистрац�
 - **Сервисы для сущностей со статусами** (`ReceiptService`, `SupplyRequestService`, `SupplyOrderService`) не используют общие базовые классы, а реализуют кастомные интерфейсы с явными бизнес-операциями.
 - **Сервис для Batch** (`BatchService`) наследует `ReadOnlyService<Batch>` и реализует `IBatchService`, добавляя только методы `MoveBatchAsync` и `GetBatchesWithFiltersAsync`.
 - **Сервис аудита (`InventoryTransactionService`)** реализует `IInventoryTransactionService`, обеспечивая создание записей аудита и их фильтрацию для просмотра.
+- **Сервис уведомлений (`NotificationService`)** – реализует `INotificationService`: получение уведомлений пользователя, отметка о прочтении, удаление, а также массовое создание уведомлений для всех менеджеров.
+- **Фоновый сервис (`NotificationBackgroundService`)** – периодически (каждый час) проверяет сроки годности и низкие остатки, создаёт уведомления для всех менеджеров.
 - **Auth/JwtService** – реализация генерации JWT-токенов.
 - **BackgroundServices** – фоновые задачи (уведомления о сроках годности, низких остатках).
 - **Валидаторы** – если используем FluentValidation.

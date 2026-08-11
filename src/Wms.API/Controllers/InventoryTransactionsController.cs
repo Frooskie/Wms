@@ -4,6 +4,7 @@ using AutoMapper;
 using Wms.Core.Enums;
 using Wms.Core.Interfaces.Services;
 using Wms.API.DTOs.Transactions;
+using Wms.Core.Interfaces.Services.Audit;
 
 namespace Wms.API.Controllers;
 

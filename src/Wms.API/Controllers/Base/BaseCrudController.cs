@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.Core.Interfaces.Services;
+using Wms.Core.Interfaces.Services.Base;
 
 namespace Wms.API.Controllers.Base;
 

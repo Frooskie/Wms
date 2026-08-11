@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Wms.Core.Interfaces.Repositories;
 using Wms.Core.Interfaces.Services;
+using Wms.Core.Interfaces.Services.Notifications;
 
 namespace Wms.Services.BackgroundServices;
 

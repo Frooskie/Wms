@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Auth;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces;
+using Wms.Core.Interfaces.Services.Auth;
 
 namespace Wms.API.Controllers;
 

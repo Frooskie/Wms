@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces;
+using Wms.Core.Interfaces.Services.Auth;
 using Wms.Core.Options;
 
 namespace Wms.Services.Auth;

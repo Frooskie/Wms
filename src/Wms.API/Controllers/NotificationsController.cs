@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Notifications;
 using Wms.Core.Interfaces.Services;
+using Wms.Core.Interfaces.Services.Notifications;
 
 namespace Wms.API.Controllers;
 

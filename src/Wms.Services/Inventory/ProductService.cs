@@ -1,0 +1,23 @@
+﻿using Wms.Core.Entities;
+using Wms.Core.Interfaces.Repositories;
+using Wms.Core.Interfaces.Services;
+using Wms.Core.Interfaces.Services.Inventory;
+using Wms.Services.Base;
+
+namespace Wms.Services.Inventory;
+
+public class ProductService(IRepository<Product> repository, IProductRepository productRepository)
+    : CrudService<Product>(repository), IProductService
+{
+    public async Task<IEnumerable<Product>> GetProductsByNameAsync(string name,
+        CancellationToken cancellationToken = default)
+    {
+        return await productRepository.GetProductsByNameAsync(name, cancellationToken);
+    }
+
+    public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category,
+        CancellationToken cancellationToken = default)
+    {
+        return await productRepository.GetProductsByCategoryAsync(category, cancellationToken);
+    }
+}

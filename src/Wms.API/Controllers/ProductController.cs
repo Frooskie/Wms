@@ -4,6 +4,7 @@ using Wms.API.Controllers.Base;
 using Wms.API.DTOs.Products;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces.Services;
+using Wms.Core.Interfaces.Services.Inventory;
 
 namespace Wms.API.Controllers;
 

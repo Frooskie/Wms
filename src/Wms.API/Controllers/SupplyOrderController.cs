@@ -6,6 +6,7 @@ using Wms.API.DTOs.Supply;
 using Wms.Core.Entities;
 using Wms.Core.Enums;
 using Wms.Core.Interfaces.Services;
+using Wms.Core.Interfaces.Services.Documents;
 
 namespace Wms.API.Controllers;
 

@@ -1,5 +1,6 @@
 ﻿using Wms.Core.Interfaces.Repositories;
 using Wms.Core.Interfaces.Services;
+using Wms.Core.Interfaces.Services.Base;
 
 namespace Wms.Services.Base;
 

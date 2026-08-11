@@ -1,0 +1,16 @@
+﻿using Wms.Core.Entities;
+using Wms.Core.Interfaces.Repositories;
+using Wms.Core.Interfaces.Services;
+using Wms.Core.Interfaces.Services.Warehouse;
+using Wms.Services.Base;
+
+namespace Wms.Services.Warehouse;
+
+public class CellService(IRepository<Cell> repository, ICellRepository cellRepository)
+    : CrudService<Cell>(repository), ICellService
+{
+    public async Task<bool> IsCellOccupiedAsync(int cellId, CancellationToken cancellationToken = default)
+    {
+        return await cellRepository.IsCellOccupiedAsync(cellId, cancellationToken);
+    }
+}

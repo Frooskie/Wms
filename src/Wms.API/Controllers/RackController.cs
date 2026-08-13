@@ -1,15 +1,20 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.Controllers.Base;
 using Wms.API.DTOs.WarehouseStructure;
 using Wms.Core.Entities;
-using Wms.Core.Interfaces.Services;
-using Wms.Core.Interfaces.Services.Warehouse;
+using Wms.Core.Interfaces.Services.WarehouseStructure;
 
 namespace Wms.API.Controllers;
 
-public class RackController(IRackService rackService, IMapper mapper)
-    : BaseCrudController<Rack, RackDto, CreateRackRequest, UpdateRackRequest>(rackService, mapper)
+public class RackController(
+    IRackService rackService,
+    IMapper mapper,
+    IValidator<CreateRackRequest> createRackValidator,
+    IValidator<UpdateRackRequest> updateRackValidator)
+    : BaseCrudControllerWithValidation<Rack, RackDto, CreateRackRequest, UpdateRackRequest>(
+        rackService, mapper, createRackValidator, updateRackValidator)
 {
     protected override object GetEntityId(Rack entity)
     {

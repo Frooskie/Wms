@@ -1,11 +1,12 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Supply;
+using Wms.API.Extensions;
 using Wms.Core.Entities;
 using Wms.Core.Enums;
-using Wms.Core.Interfaces.Services;
 using Wms.Core.Interfaces.Services.Documents;
 
 namespace Wms.API.Controllers;
@@ -13,13 +14,19 @@ namespace Wms.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class SupplyOrderController(ISupplyOrderService service, IMapper mapper) : ControllerBase
+public class SupplyOrderController(
+    ISupplyOrderService service,
+    IMapper mapper,
+    IValidator<CreateSupplyOrderRequest> createSupplyOrderValidator)
+    : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
     public async Task<ActionResult<SupplyOrderDto>> Create([FromBody] CreateSupplyOrderRequest request,
         CancellationToken cancellationToken)
     {
+        await createSupplyOrderValidator.ValidateAndThrowAsync(request, cancellationToken);
+        
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         var order = new SupplyOrder
         {

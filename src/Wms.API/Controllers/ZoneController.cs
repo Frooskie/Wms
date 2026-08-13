@@ -1,15 +1,20 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.Controllers.Base;
 using Wms.API.DTOs.WarehouseStructure;
 using Wms.Core.Entities;
-using Wms.Core.Interfaces.Services;
-using Wms.Core.Interfaces.Services.Warehouse;
+using Wms.Core.Interfaces.Services.WarehouseStructure;
 
 namespace Wms.API.Controllers;
 
-public class ZoneController(IZoneService zoneService, IMapper mapper)
-    : BaseCrudController<Zone, ZoneDto, CreateZoneRequest, UpdateZoneRequest>(zoneService, mapper)
+public class ZoneController(
+    IZoneService zoneService,
+    IMapper mapper,
+    IValidator<CreateZoneRequest> createZoneValidator,
+    IValidator<UpdateZoneRequest> updateZoneValidator)
+    : BaseCrudControllerWithValidation<Zone, ZoneDto, CreateZoneRequest, UpdateZoneRequest>(
+        zoneService, mapper, createZoneValidator, updateZoneValidator)
 {
     protected override object GetEntityId(Zone entity)
     {

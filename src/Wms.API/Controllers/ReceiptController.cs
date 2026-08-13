@@ -1,11 +1,12 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Receipts;
+using Wms.API.Extensions;
 using Wms.Core.Entities;
 using Wms.Core.Enums;
-using Wms.Core.Interfaces.Services;
 using Wms.Core.Interfaces.Services.Documents;
 
 namespace Wms.API.Controllers;
@@ -13,13 +14,20 @@ namespace Wms.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ReceiptController(IReceiptService receiptService, IMapper mapper) : ControllerBase
+public class ReceiptController(
+    IReceiptService receiptService,
+    IMapper mapper,
+    IValidator<CreateReceiptRequest> createReceiptValidator,
+    IValidator<ReceiveReceiptRequest> receiveReceiptValidator) 
+    : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
     public async Task<ActionResult<ReceiptDto>> CreateReceipt([FromBody] CreateReceiptRequest request,
         CancellationToken cancellationToken)
     {
+        await createReceiptValidator.ValidateAndThrowAsync(request, cancellationToken);
+        
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         var receipt = new Receipt
         {
@@ -67,6 +75,8 @@ public class ReceiptController(IReceiptService receiptService, IMapper mapper) :
     public async Task<IActionResult> ReceiveReceipt(int id, [FromBody] ReceiveReceiptRequest request,
         CancellationToken cancellationToken)
     {
+        await receiveReceiptValidator.ValidateAndThrowAsync(request, cancellationToken);
+        
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         var receiveLines = request.Lines.Select(l => (
             l.ProductId,

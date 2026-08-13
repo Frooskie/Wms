@@ -26,7 +26,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         var statusCode = exception switch
         {
             NotFoundException => (int)HttpStatusCode.NotFound,
-            BusinessRuleException or ValidationException => (int)HttpStatusCode.BadRequest,
+            BusinessRuleException or ModelValidationException => (int)HttpStatusCode.BadRequest,
             ForbiddenAccessException => (int)HttpStatusCode.Forbidden,
             _ => (int)HttpStatusCode.InternalServerError
         };

@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Auth;
+using Wms.API.Extensions;
 using Wms.Core.Entities;
-using Wms.Core.Interfaces;
 using Wms.Core.Interfaces.Services.Auth;
 
 namespace Wms.API.Controllers;
@@ -13,12 +14,18 @@ namespace Wms.API.Controllers;
 public class AuthController(
     UserManager<ApplicationUser> userManager,
     RoleManager<IdentityRole> roleManager,
-    IJwtService jwtService)
+    IJwtService jwtService,
+    IValidator<LoginRequest> loginValidator,
+    IValidator<RegisterRequest> registerValidator)
     : ControllerBase
 {
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login(
+        [FromBody] LoginRequest request,
+        CancellationToken cancellationToken)
     {
+        await loginValidator.ValidateAndThrowAsync(request, cancellationToken);
+        
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
             return Unauthorized("Invalid credentials");
@@ -37,8 +44,12 @@ public class AuthController(
 
     [Authorize(Roles = "Chief")]
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    public async Task<IActionResult> Register(
+        [FromBody] RegisterRequest request,
+        CancellationToken cancellationToken)
     {
+        await registerValidator.ValidateAndThrowAsync(request, cancellationToken);
+        
         var user = new ApplicationUser
         {
             UserName = request.Email,

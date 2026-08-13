@@ -1,4 +1,5 @@
 using System.Text;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Wms.API.MappingProfiles;
 using Wms.API.Middlewares;
+using Wms.API.Validators.Auth;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces;
 using Wms.Core.Interfaces.Repositories;
@@ -15,7 +17,7 @@ using Wms.Core.Interfaces.Services.Auth;
 using Wms.Core.Interfaces.Services.Documents;
 using Wms.Core.Interfaces.Services.Inventory;
 using Wms.Core.Interfaces.Services.Notifications;
-using Wms.Core.Interfaces.Services.Warehouse;
+using Wms.Core.Interfaces.Services.WarehouseStructure;
 using Wms.Core.Options;
 using Wms.Infrastructure.Data;
 using Wms.Infrastructure.Data.Seed;
@@ -26,7 +28,7 @@ using Wms.Services.BackgroundServices;
 using Wms.Services.Documents;
 using Wms.Services.Inventory;
 using Wms.Services.Notifications;
-using Wms.Services.Warehouse;
+using Wms.Services.WarehouseStructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -122,6 +124,8 @@ builder.Services.AddScoped<IInventoryTransactionService, InventoryTransactionSer
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddHostedService<NotificationBackgroundService>();
+
+builder.Services.AddValidatorsFromAssemblyContaining<LoginValidator>();
 
 builder.Services.AddCors(options =>
 {

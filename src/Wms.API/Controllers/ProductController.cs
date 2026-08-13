@@ -1,15 +1,20 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.Controllers.Base;
 using Wms.API.DTOs.Products;
 using Wms.Core.Entities;
-using Wms.Core.Interfaces.Services;
 using Wms.Core.Interfaces.Services.Inventory;
 
 namespace Wms.API.Controllers;
 
-public class ProductController(IProductService productService, IMapper mapper)
-    : BaseCrudController<Product, ProductDto, CreateProductRequest, UpdateProductRequest>(productService, mapper)
+public class ProductController(
+    IProductService productService,
+    IMapper mapper,
+    IValidator<CreateProductRequest> createProductValidator,
+    IValidator<UpdateProductRequest> updateProductValidator)
+    : BaseCrudControllerWithValidation<Product, ProductDto, CreateProductRequest, UpdateProductRequest>(
+        productService, mapper, createProductValidator, updateProductValidator)
 {
     protected override object GetEntityId(Product entity)
     {

@@ -1,10 +1,11 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Batches;
+using Wms.API.Extensions;
 using Wms.Core.Entities;
-using Wms.Core.Interfaces.Services;
 using Wms.Core.Interfaces.Services.Inventory;
 
 namespace Wms.API.Controllers;
@@ -12,7 +13,12 @@ namespace Wms.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class BatchController(IBatchService batchService, IMapper mapper) : ControllerBase
+public class BatchController(
+    IBatchService batchService,
+    IMapper mapper,
+    IValidator<CreateBatchRequest> createBatchValidator,
+    IValidator<MoveBatchRequest> moveBatchValidator)
+    : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetBatches(
@@ -44,8 +50,10 @@ public class BatchController(IBatchService batchService, IMapper mapper) : Contr
     public async Task<IActionResult> CreateBatch([FromBody] CreateBatchRequest request,
         CancellationToken cancellationToken)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+        await createBatchValidator.ValidateAndThrowAsync(request, cancellationToken);
         
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
         var batch = mapper.Map<Batch>(request);
         await batchService.CreateBatchAsync(batch, userId, null, cancellationToken);
 
@@ -58,8 +66,10 @@ public class BatchController(IBatchService batchService, IMapper mapper) : Contr
     public async Task<IActionResult> MoveBatch(int id, [FromBody] MoveBatchRequest request,
         CancellationToken cancellationToken)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+        await moveBatchValidator.ValidateAndThrowAsync(request, cancellationToken);
         
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
         await batchService.MoveBatchAsync(id, request.CellId, userId, cancellationToken);
         return NoContent();
     }

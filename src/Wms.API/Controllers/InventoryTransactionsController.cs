@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
+using FluentValidation;
 using Wms.Core.Enums;
-using Wms.Core.Interfaces.Services;
 using Wms.API.DTOs.Transactions;
+using Wms.API.Extensions;
 using Wms.Core.Interfaces.Services.Audit;
 
 namespace Wms.API.Controllers;
@@ -11,7 +12,10 @@ namespace Wms.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class InventoryTransactionsController(IInventoryTransactionService transactionService, IMapper mapper)
+public class InventoryTransactionsController(
+    IInventoryTransactionService transactionService,
+    IMapper mapper,
+    IValidator<TransactionFilterDto> transactionFilterDtoValidator)
     : ControllerBase
 {
     [HttpGet]
@@ -19,6 +23,8 @@ public class InventoryTransactionsController(IInventoryTransactionService transa
         [FromQuery] TransactionFilterDto filter,
         CancellationToken cancellationToken)
     {
+        await transactionFilterDtoValidator.ValidateAndThrowAsync(filter, cancellationToken);
+        
         // Преобразуем строковый TransactionType в enum, если передан
         TransactionType? transactionType = null;
         if (!string.IsNullOrEmpty(filter.TransactionType) &&

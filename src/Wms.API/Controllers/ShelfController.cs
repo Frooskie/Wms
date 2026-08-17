@@ -7,6 +7,7 @@ using Wms.Core.Interfaces.Services.WarehouseStructure;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Управление полками.</summary>
 public class ShelfController(
     IShelfService shelfService,
     IMapper mapper,

@@ -3,6 +3,9 @@
 public record CreateZoneRequest
 {
     public string Name { get; init; } = string.Empty;
-    public string Type { get; init; } = string.Empty; // "Normal", "Fridge", "Freezer"
+
+    /// <summary>Тип зоны хранения. Обычная, холодильник, морозилка ("Normal", "Fridge", "Freezer")</summary>
+    public string Type { get; init; } = string.Empty; // 
+
     public int WarehouseId { get; init; }
 }

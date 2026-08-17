@@ -108,8 +108,9 @@ API знает о Infrastructure только через DI (регистрац�
 - **Extensions** – методы расширения для регистрации сервисов в DI.
 - **Validators** – классы валидации на основе FluentValidation для всех входных DTO.
 - **Program.cs** – настройка хоста, DI, конвейер middleware.
+- **XML-комментарии** – для всех контроллеров и DTO используются стандартные XML-комментарии (`/// <summary>`, `/// <param>`, `/// <returns>`). Swagger автоматически подхватывает их для генерации документации, что гарантирует актуальность описаний и упрощает поддержку.
 
-**Зависимости:**
+- **Зависимости:**
 - `Wms.Services` – для внедрения сервисов.
 - `Wms.Infrastructure` – для регистрации DbContext и репозиториев (через DI).
 - `AutoMapper.Extensions.Microsoft.DependencyInjection` – для маппинга.
@@ -220,6 +221,19 @@ API знает о Infrastructure только через DI (регистрац�
 
 **Обоснование:** единообразный формат ошибок, скрытие деталей внутренних исключений от клиента, логирование ошибок.
 
+Каждый ответ об ошибке содержит:
+- `type` – имя класса исключения (например, `ModelValidationException`);
+- `title` – краткое сообщение об ошибке;
+- `status` – HTTP-статус;
+- `instance` – путь запроса;
+- `traceId` – уникальный идентификатор запроса (берётся из `HttpContext.TraceIdentifier`), позволяющий сопоставить ошибку с логами.
+
+Для ошибок валидации (`ModelValidationException`) в ответ добавляется поле `errors` – словарь, где ключ – имя поля, а значение – массив сообщений об ошибках. Это упрощает отображение ошибок на клиенте (например, подсветка полей формы).
+
+Логирование разделено по уровням:
+- `ModelValidationException` – уровень **Warning** (ожидаемая ошибка, связанная с некорректным запросом).
+- Все остальные исключения – уровень **Error** (неожиданные проблемы, требующие внимания разработчика).
+
 ---
 
 ### 3.9. Валидация входных данных
@@ -229,6 +243,49 @@ API знает о Infrastructure только через DI (регистрац�
 В контроллерах валидация выполняется явно (через вызов `ValidateAndThrowAsync`) или через базовый класс `BaseCrudControllerWithValidation`, который автоматически проверяет DTO перед передачей в сервис.
 При нарушении правил генерируется `ModelValidationException`, которое перехватывается глобальным middleware и возвращает клиенту структурированный ответ.
 
+---
+
+
+### 3.10. Формат ответов об ошибках (Problem Details)
+
+Все ошибки API возвращаются в формате `application/problem+json`. 
+
+Пример ответа для ошибки валидации:
+```json
+{
+  "type": "ModelValidationException",
+  "title": "Name: Name is required; MinStockThreshold: MinStockThreshold must be non-negative.",
+  "status": 400,
+  "instance": "/api/products",
+  "traceId": "0HLO1K7...",
+  "errors": {
+    "Name": ["Name is required."],
+    "MinStockThreshold": ["MinStockThreshold must be non-negative."]
+  }
+}
+```
+
+Пример для бизнес-ошибки (`BusinessRuleException`):
+```json
+{
+  "type": "BusinessRuleException",
+  "title": "Not enough available stock for product ID 42. Missing 10 units.",
+  "status": 400,
+  "instance": "/api/supply-orders/5/confirm",
+  "traceId": "0HLO1K8..."
+}
+```
+
+Пример для не найденного ресурса (`NotFoundException`):
+```json
+{
+  "type": "NotFoundException",
+  "title": "Product with id 999 not found.",
+  "status": 404,
+  "instance": "/api/products/999",
+  "traceId": "0HLO1K9..."
+}
+```
 ---
 
 ## 4. Схема базы данных (ключевые связи)

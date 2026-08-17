@@ -7,6 +7,7 @@ using Wms.Core.Interfaces.Services.WarehouseStructure;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Управление складами.</summary>
 public class WarehouseController(
     IWarehouseService service, 
     IMapper mapper,

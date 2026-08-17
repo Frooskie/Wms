@@ -11,6 +11,7 @@ using Wms.Core.Interfaces.Services.Documents;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Управление заказами на отгрузку.</summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -63,6 +64,15 @@ public class SupplyOrderController(
         return Ok(mapper.Map<SupplyOrderDto>(order));
     }
 
+    /// <summary>Подтвердить заказ — выполнить резервирование товаров.</summary>
+    /// <remarks>
+    /// Для каждой позиции заказа система ищет доступные партии (Quantity - ReservedQuantity).
+    /// Если суммарного доступного количества достаточно, создаются записи Reservation и обновляется ReservedQuantity.
+    /// Если не хватает хотя бы для одной позиции, заказ не подтверждается.
+    /// </remarks>
+    /// <response code="204">Резервирование выполнено.</response>
+    /// <response code="400">Недостаточно остатков или заказ уже подтверждён.</response>
+    /// <response code="404">Заказ не найден.</response>
     [HttpPut("{id}/confirm")]
     [Authorize(Roles = "Manager,Chief")]
     public async Task<IActionResult> Confirm(int id, CancellationToken cancellationToken)
@@ -71,6 +81,14 @@ public class SupplyOrderController(
         return NoContent();
     }
 
+    /// <summary>Отгрузить заказ — списать остатки и удалить резервы.</summary>
+    /// <remarks>
+    /// Заказ должен быть в статусе Confirmed. Для каждой партии списывается зарезервированное количество,
+    /// создаётся транзакция Out, резервы удаляются. Если партия становится пустой, ячейка освобождается.
+    /// </remarks>
+    /// <response code="204">Отгрузка выполнена.</response>
+    /// <response code="400">Заказ не в статусе Confirmed.</response>
+    /// <response code="404">Заказ не найден.</response>
     [HttpPut("{id}/ship")]
     [Authorize(Roles = "Manager,Chief,Worker")]
     public async Task<IActionResult> Ship(int id, CancellationToken cancellationToken)

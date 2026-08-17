@@ -2,6 +2,8 @@
 
 public record CreateRackRequest
 {
-    public string Code { get; init; } = string.Empty; // например, "A"
+    /// <summary>Буквенный код стеллажа (Например А).</summary>
+    public string Code { get; init; } = string.Empty;
+
     public int ZoneId { get; init; }
 }

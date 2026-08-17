@@ -9,6 +9,7 @@ using Wms.Core.Interfaces.Services.Audit;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Аудит движений товаров.</summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -18,6 +19,11 @@ public class InventoryTransactionsController(
     IValidator<TransactionFilterDto> transactionFilterDtoValidator)
     : ControllerBase
 {
+    /// <summary>Получить список транзакций с фильтрацией.</summary>
+    /// <returns>Список транзакций.</returns>
+    /// <remarks>
+    /// Доступно для Chief и Manager.
+    /// </remarks>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<InventoryTransactionResponseDto>>> GetTransactions(
         [FromQuery] TransactionFilterDto filter,

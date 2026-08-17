@@ -11,6 +11,7 @@ using Wms.Core.Interfaces.Services.Documents;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Управление заявками магазина на поставку.</summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -45,6 +46,7 @@ public class SupplyRequestController(
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, mapper.Map<SupplyRequestDto>(created));
     }
 
+    /// <summary>Получить список заявок с фильтрацией по статусу и создателю.</summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SupplyRequestDto>>> GetAll([FromQuery] string? status,
         [FromQuery] string? createdBy, CancellationToken cancellationToken)
@@ -68,6 +70,10 @@ public class SupplyRequestController(
         return Ok(mapper.Map<SupplyRequestDto>(req));
     }
 
+    /// <summary>Отправить заявку на рассмотрение. Доступно только создателю заявки.</summary>
+    /// <response code="204">Заявка отправлена.</response>
+    /// <response code="400">Заявка не в статусе Draft или не является создателем.</response>
+    /// <response code="404">Заявка не найдена.</response>
     [HttpPut("{id}/submit")]
     public async Task<IActionResult> Submit(int id, CancellationToken cancellationToken)
     {
@@ -76,6 +82,7 @@ public class SupplyRequestController(
         return NoContent();
     }
 
+    /// <summary>Одобрить заявку (доступно Manager/Chief).</summary>
     [HttpPut("{id}/approve")]
     [Authorize(Roles = "Manager,Chief")]
     public async Task<IActionResult> Approve(int id, CancellationToken cancellationToken)
@@ -84,6 +91,7 @@ public class SupplyRequestController(
         return NoContent();
     }
 
+    /// <summary>Отклонить заявку (доступно Manager/Chief).</summary>
     [HttpPut("{id}/reject")]
     [Authorize(Roles = "Manager,Chief")]
     public async Task<IActionResult> Reject(int id, CancellationToken cancellationToken)

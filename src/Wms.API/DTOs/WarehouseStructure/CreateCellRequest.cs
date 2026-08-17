@@ -2,6 +2,8 @@
 
 public record CreateCellRequest
 {
-    public string Code { get; init; } = string.Empty; // например, "A-1-1"
+    /// <summary>Номер полки.</summary>
+    public string Code { get; init; } = string.Empty;
+
     public int ShelfId { get; init; }
 }

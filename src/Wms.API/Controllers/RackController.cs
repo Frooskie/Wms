@@ -8,6 +8,7 @@ using Wms.Core.Interfaces.Services.WarehouseStructure;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Управление стеллажами.</summary>
 public class RackController(
     IRackService rackService,
     IMapper mapper,
@@ -21,6 +22,7 @@ public class RackController(
         return entity.Id;
     }
 
+    /// <summary>Получить стеллажи с вложенными полками и ячейками.</summary>
     [HttpGet("with-shelves")]
     public async Task<ActionResult<IEnumerable<RackDto>>> GetRacksWithShelvesAndCells(
         CancellationToken cancellationToken)

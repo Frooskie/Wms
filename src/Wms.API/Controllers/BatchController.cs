@@ -10,6 +10,7 @@ using Wms.Core.Interfaces.Services.Inventory;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Управление партиями товаров.</summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -20,6 +21,8 @@ public class BatchController(
     IValidator<MoveBatchRequest> moveBatchValidator)
     : ControllerBase
 {
+    /// <summary>Получить список партий с фильтрацией.</summary>
+    /// <returns>Список партий.</returns>
     [HttpGet]
     public async Task<IActionResult> GetBatches(
         [FromQuery] int? productId,
@@ -45,6 +48,8 @@ public class BatchController(
         return Ok(dto);
     }
 
+    /// <summary>Создать новую партию (только Manager/Chief).</summary>
+    /// <returns>Созданная партия.</returns>
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
     public async Task<IActionResult> CreateBatch([FromBody] CreateBatchRequest request,
@@ -61,6 +66,10 @@ public class BatchController(
         return CreatedAtAction(nameof(GetBatch), new { id = batch.Id }, dto);
     }
 
+    /// <summary>Переместить партию в другую ячейку (только Manager/Chief).</summary>
+    /// <response code="204">Успешное перемещение.</response>
+    /// <response code="400">Целевая ячейка занята или не существует.</response>
+    /// <response code="404">Партия не найдена.</response>
     [HttpPut("{id}/move")]
     [Authorize(Roles = "Manager,Chief")]
     public async Task<IActionResult> MoveBatch(int id, [FromBody] MoveBatchRequest request,

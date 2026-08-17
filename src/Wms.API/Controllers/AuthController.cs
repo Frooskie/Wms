@@ -9,6 +9,7 @@ using Wms.Core.Interfaces.Services.Auth;
 
 namespace Wms.API.Controllers;
 
+///<summary>Аутентификация и регистрация пользователей.</summary>
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController(
@@ -19,6 +20,11 @@ public class AuthController(
     IValidator<RegisterRequest> registerValidator)
     : ControllerBase
 {
+    /// <summary>Вход в систему. Возвращает JWT-токен.</summary>
+    /// <returns>Токен и информация о пользователе.</returns>
+    /// <response code="200">Успешный вход.</response>
+    /// <response code="400">Ошибка валидации.</response>
+    /// <response code="401">Неверные учётные данные.</response>
     [HttpPost("login")]
     public async Task<IActionResult> Login(
         [FromBody] LoginRequest request,
@@ -41,7 +47,13 @@ public class AuthController(
             Roles = roles.ToList()
         });
     }
-
+    
+    /// <summary>Регистрация нового пользователя. Доступно только для Chief.</summary>
+    /// <returns>Сообщение об успехе.</returns>
+    /// <response code="200">Пользователь зарегистрирован.</response>
+    /// <response code="400">Ошибка валидации или указана несуществующая роль.</response>
+    /// <response code="401">Не авторизован.</response>
+    /// <response code="403">Недостаточно прав (только Chief).</response>
     [Authorize(Roles = "Chief")]
     [HttpPost("register")]
     public async Task<IActionResult> Register(

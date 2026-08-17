@@ -5,11 +5,13 @@ using Wms.Core.Interfaces.Services.Notifications;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Управление уведомлениями пользователя.</summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class NotificationsController(INotificationService notificationService) : ControllerBase
 {
+    /// <summary>Получить уведомления текущего пользователя.</summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<NotificationResponseDto>>> GetMyNotifications(
         [FromQuery] bool? isRead,
@@ -27,6 +29,7 @@ public class NotificationsController(INotificationService notificationService) :
             n.CreatedAt)));
     }
 
+    /// <summary>Отметить уведомление как прочитанное.</summary>
     [HttpPut("{id}/read")]
     public async Task<IActionResult> MarkAsRead(int id, CancellationToken cancellationToken)
     {
@@ -36,6 +39,7 @@ public class NotificationsController(INotificationService notificationService) :
         return NoContent();
     }
 
+    /// <summary>Удалить уведомление.</summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {

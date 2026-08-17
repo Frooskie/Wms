@@ -7,6 +7,7 @@ using Wms.Core.Interfaces.Services.WarehouseStructure;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Управление ячейками.</summary>
 public class CellController(
     ICellService cellService,
     IMapper mapper,

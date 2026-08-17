@@ -8,6 +8,7 @@ using Wms.Core.Interfaces.Services.WarehouseStructure;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Управление зонами склада.</summary>
 public class ZoneController(
     IZoneService zoneService,
     IMapper mapper,
@@ -21,6 +22,7 @@ public class ZoneController(
         return entity.Id;
     }
 
+    /// <summary>Получить все зоны с деталями (стеллажи, полки, ячейки).</summary>
     [HttpGet("with-details")]
     public async Task<ActionResult<IEnumerable<ZoneDto>>> GetZonesWithDetails(CancellationToken cancellationToken)
     {

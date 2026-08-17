@@ -14,9 +14,11 @@ public static class ValidatorExtensions
         if (!result.IsValid)
         {
             var errors = result.Errors
-                .Select(e => $"{e.PropertyName}: {e.ErrorMessage}")
+                .Select(e => new ValidationError(e.PropertyName, e.ErrorMessage))
                 .ToList();
-            throw new ModelValidationException(string.Join("; ", errors));
+
+            var message = string.Join("; ", errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}"));
+            throw new ModelValidationException(message, errors);
         }
     }
 }

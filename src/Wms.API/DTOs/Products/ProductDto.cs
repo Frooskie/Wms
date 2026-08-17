@@ -8,5 +8,7 @@ public record ProductDto
     public string? Supplier { get; init; }
     public string? Category { get; init; }
     public string Unit { get; init; } = string.Empty;
+    
+    /// <summary>Минимальный порог остатка.</summary>
     public decimal MinStockThreshold { get; init; }
 }

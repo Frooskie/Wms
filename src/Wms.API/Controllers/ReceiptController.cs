@@ -11,6 +11,7 @@ using Wms.Core.Interfaces.Services.Documents;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Управление приёмкой товаров.</summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -70,6 +71,13 @@ public class ReceiptController(
         return Ok(dto);
     }
 
+    /// <summary>Подтвердить приёмку товара.</summary>
+    /// <remarks>
+    /// Если фактическое количество отличается от ожидаемого, разница фиксируется в комментарии документа Receipt.Comment.
+    /// </remarks>
+    /// <response code="204">Приёмка успешно подтверждена.</response>
+    /// <response code="400">Ошибка валидации или бизнес-правила (например, ячейка занята).</response>
+    /// <response code="404">Документ не найден.</response>
     [HttpPut("{id}/receive")]
     [Authorize(Roles = "Manager,Chief,Worker")]
     public async Task<IActionResult> ReceiveReceipt(int id, [FromBody] ReceiveReceiptRequest request,
@@ -90,6 +98,7 @@ public class ReceiptController(
         return NoContent();
     }
 
+    /// <summary>Отклонить приёмку (доступно Manager/Chief). </summary>
     [HttpPut("{id}/reject")]
     [Authorize(Roles = "Manager,Chief")]
     public async Task<IActionResult> RejectReceipt(int id, CancellationToken cancellationToken)

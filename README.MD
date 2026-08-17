@@ -106,7 +106,7 @@ https://localhost:5001/swagger
 | **Маппинг** | AutoMapper |
 | **Валидация** | FluentValidation |
 | **Логирование** | Serilog |
-| **Документация API** | Swashbuckle (Swagger) |
+| **Документация API** | Swashbuckle (Swagger) с интеграцией XML-комментариев |
 | **Тестирование** | xUnit, Moq |
 | **Среда разработки** | JetBrains Rider 2025.3.2 |
 

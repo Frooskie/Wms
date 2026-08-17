@@ -8,6 +8,7 @@ using Wms.Core.Interfaces.Services.Inventory;
 
 namespace Wms.API.Controllers;
 
+/// <summary>Управление справочником товаров.</summary>
 public class ProductController(
     IProductService productService,
     IMapper mapper,
@@ -21,6 +22,7 @@ public class ProductController(
         return entity.Id;
     }
 
+    /// <summary>Поиск товаров по названию (частичное совпадение).</summary>
     [HttpGet("search")]
     public async Task<ActionResult<IEnumerable<ProductDto>>> SearchByName([FromQuery] string name,
         CancellationToken cancellationToken)
@@ -30,6 +32,7 @@ public class ProductController(
         return Ok(dtos);
     }
 
+    /// <summary>Получить товары по категории.</summary>
     [HttpGet("category/{category}")]
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetByCategory(string category,
         CancellationToken cancellationToken)

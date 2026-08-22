@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wms.Infrastructure", "src\W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wms.Services", "src\Wms.Services\Wms.Services.csproj", "{A0BD0FA0-7AB0-4890-980E-019827C43A7A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wms.UnitTests", "tests\Wms.UnitTests\Wms.UnitTests.csproj", "{FC6ADA84-E5B4-47DC-A6AB-DE74616204BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{A0BD0FA0-7AB0-4890-980E-019827C43A7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0BD0FA0-7AB0-4890-980E-019827C43A7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0BD0FA0-7AB0-4890-980E-019827C43A7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC6ADA84-E5B4-47DC-A6AB-DE74616204BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC6ADA84-E5B4-47DC-A6AB-DE74616204BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC6ADA84-E5B4-47DC-A6AB-DE74616204BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC6ADA84-E5B4-47DC-A6AB-DE74616204BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

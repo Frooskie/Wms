@@ -1,4 +1,5 @@
-﻿using Wms.Core.Entities;
+﻿using Wms.Core.DTOs.Common;
+using Wms.Core.Entities;
 
 namespace Wms.Core.Interfaces.Repositories;
 
@@ -12,6 +13,15 @@ public interface IBatchRepository : IRepository<Batch>
         CancellationToken cancellationToken = default);
 
     Task<Batch?> GetBatchWithProductAndCellAsync(int batchId, CancellationToken cancellationToken = default);
+    
+    Task<PagedResult<Batch>> GetBatchesPagedFilteredAsync(
+        int? productId = null,
+        int? cellId = null,
+        DateTime? expiryFrom = null,
+        DateTime? expiryTo = null,
+        int pageNumber = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default);
 
     Task<bool> IsCellOccupiedByOtherBatchAsync(int cellId, int? excludeBatchId = null,
         CancellationToken cancellationToken = default);

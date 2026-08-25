@@ -5,6 +5,7 @@ using FluentValidation;
 using Wms.Core.Enums;
 using Wms.API.DTOs.Transactions;
 using Wms.API.Extensions;
+using Wms.Core.DTOs.Common;
 using Wms.Core.Interfaces.Services.Audit;
 
 namespace Wms.API.Controllers;
@@ -19,13 +20,13 @@ public class InventoryTransactionsController(
     IValidator<TransactionFilterDto> transactionFilterDtoValidator)
     : ControllerBase
 {
-    /// <summary>Получить список транзакций с фильтрацией.</summary>
+    /// <summary>Получить список транзакций с фильтрацией и пагинацией.</summary>
     /// <returns>Список транзакций.</returns>
     /// <remarks>
     /// Доступно для Chief и Manager.
     /// </remarks>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<InventoryTransactionResponseDto>>> GetTransactions(
+    public async Task<ActionResult<PagedResult<InventoryTransactionResponseDto>>> GetTransactions(
         [FromQuery] TransactionFilterDto filter,
         CancellationToken cancellationToken)
     {
@@ -39,16 +40,24 @@ public class InventoryTransactionsController(
             transactionType = parsed;
         }
 
-        var transactions = await transactionService.GetFilteredAsync(
+        var pagedResult = await transactionService.GetPagedFilteredAsync(
             filter.BatchId,
             filter.ProductId,
             filter.UserId,
             transactionType,
             filter.FromDate,
             filter.ToDate,
+            filter.PageNumber,
+            filter.PageSize,
             cancellationToken);
 
-        var dtos = mapper.Map<IEnumerable<InventoryTransactionResponseDto>>(transactions);
-        return Ok(dtos);
+        var dtoItems = mapper.Map<IEnumerable<InventoryTransactionResponseDto>>(pagedResult.Items);
+        var response = new PagedResult<InventoryTransactionResponseDto>(
+            dtoItems,
+            pagedResult.TotalCount,
+            pagedResult.PageNumber,
+            pagedResult.PageSize);
+
+        return Ok(response);
     }
 }

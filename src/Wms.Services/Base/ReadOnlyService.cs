@@ -1,4 +1,6 @@
-﻿using Wms.Core.Interfaces.Repositories;
+﻿using System.Linq.Expressions;
+using Wms.Core.DTOs.Common;
+using Wms.Core.Interfaces.Repositories;
 using Wms.Core.Interfaces.Services;
 using Wms.Core.Interfaces.Services.Base;
 
@@ -17,5 +19,15 @@ public abstract class ReadOnlyService<T>(IRepository<T> repository) : IReadOnlyS
     public virtual async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _repository.GetByIdAsync(id, cancellationToken);
+    }
+    
+    public virtual async Task<PagedResult<T>> GetPagedAsync(
+        Expression<Func<T, bool>>? filter = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+        int pageNumber = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        return await _repository.GetPagedAsync(filter, orderBy, pageNumber, pageSize, cancellationToken);
     }
 }

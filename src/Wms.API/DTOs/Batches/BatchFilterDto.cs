@@ -1,17 +1,14 @@
-﻿namespace Wms.API.DTOs.Transactions;
+﻿using System;
 
-public record TransactionFilterDto
+namespace Wms.API.DTOs.Batches;
+
+public record BatchFilterDto
 {
-    public int? BatchId { get; init; }
     public int? ProductId { get; init; }
-    public string? UserId { get; init; }
+    public int? CellId { get; init; }
+    public DateTime? ExpiryFrom { get; init; }
+    public DateTime? ExpiryTo { get; init; }
 
-    /// <summary>Тип операции (Enum TransactionType: 0 — In, 1 — Out, 2 — Move, 3 — WriteOff).</summary>
-    public string? TransactionType { get; init; }
-
-    public DateTime? FromDate { get; init; }
-    public DateTime? ToDate { get; init; }
-    
     private int _pageNumber = 1;
     private int _pageSize = 10;
     private const int MaxPageSize = 100;

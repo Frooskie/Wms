@@ -1,4 +1,5 @@
-﻿using Wms.Core.Entities;
+﻿using Wms.Core.DTOs.Common;
+using Wms.Core.Entities;
 using Wms.Core.Enums;
 using Wms.Core.Interfaces.Repositories;
 using Wms.Core.Interfaces.Services;
@@ -8,17 +9,20 @@ namespace Wms.Services.Audit;
 
 public class InventoryTransactionService(IInventoryTransactionRepository repository) : IInventoryTransactionService
 {
-    public async Task<IEnumerable<InventoryTransaction>> GetFilteredAsync(
+    public async Task<PagedResult<InventoryTransaction>> GetPagedFilteredAsync(
         int? batchId = null,
         int? productId = null,
         string? userId = null,
         TransactionType? transactionType = null,
         DateTime? fromDate = null,
         DateTime? toDate = null,
+        int pageNumber = 1,
+        int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        return await repository.GetFilteredAsync(
-            batchId, productId, userId, transactionType, fromDate, toDate, cancellationToken);
+        return await repository.GetPagedFilteredAsync(
+            batchId, productId, userId, transactionType, fromDate, toDate,
+            pageNumber, pageSize, cancellationToken);
     }
 
     public async Task AddTransactionAsync(

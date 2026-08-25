@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Wms.Core.DTOs.Common;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces.Repositories;
 using Wms.Infrastructure.Data;
@@ -57,6 +58,44 @@ public class BatchRepository(ApplicationDbContext context) : Repository<Batch>(c
             .Include(b => b.Product)
             .Include(b => b.Cell)
             .FirstOrDefaultAsync(b => b.Id == batchId, cancellationToken);
+    }
+    
+    public async Task<PagedResult<Batch>> GetBatchesPagedFilteredAsync(
+        int? productId = null,
+        int? cellId = null,
+        DateTime? expiryFrom = null,
+        DateTime? expiryTo = null,
+        int pageNumber = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var query = Context.Batches
+            .Include(b => b.Product)
+            .Include(b => b.Cell)
+            .ThenInclude(c => c.Shelf)
+            .ThenInclude(s => s.Rack)
+            .ThenInclude(r => r.Zone)
+            .AsNoTracking();
+        
+        if (productId.HasValue)
+            query = query.Where(b => b.ProductId == productId.Value);
+        if (cellId.HasValue)
+            query = query.Where(b => b.CellId == cellId.Value);
+        if (expiryFrom.HasValue)
+            query = query.Where(b => b.ExpiryDate >= expiryFrom.Value);
+        if (expiryTo.HasValue)
+            query = query.Where(b => b.ExpiryDate <= expiryTo.Value);
+        
+        query = query.OrderBy(b => b.ExpiryDate).ThenBy(b => b.Id);
+        
+        var totalCount = await query.CountAsync(cancellationToken);
+        
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<Batch>(items, totalCount, pageNumber, pageSize);
     }
 
     public async Task<bool> IsCellOccupiedByOtherBatchAsync(int cellId, int? excludeBatchId = null,

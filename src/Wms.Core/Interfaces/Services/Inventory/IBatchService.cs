@@ -1,4 +1,5 @@
-﻿using Wms.Core.Entities;
+﻿using Wms.Core.DTOs.Common;
+using Wms.Core.Entities;
 using Wms.Core.Interfaces.Services.Base;
 
 namespace Wms.Core.Interfaces.Services.Inventory;
@@ -13,6 +14,12 @@ public interface IBatchService : IReadOnlyService<Batch>
 
     Task DeleteBatchAsync(int id, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<Batch>> GetBatchesWithFiltersAsync(int? productId, int? cellId, DateTime? expiryFrom,
-        DateTime? expiryTo, CancellationToken cancellationToken = default);
+    Task<PagedResult<Batch>> GetPagedBatchesWithFiltersAsync(
+        int? productId = null,
+        int? cellId = null,
+        DateTime? expiryFrom = null,
+        DateTime? expiryTo = null,
+        int pageNumber = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default);
 }

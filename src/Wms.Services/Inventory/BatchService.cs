@@ -1,8 +1,8 @@
-﻿using Wms.Core.Entities;
+﻿using Wms.Core.DTOs.Common;
+using Wms.Core.Entities;
 using Wms.Core.Enums;
 using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Repositories;
-using Wms.Core.Interfaces.Services;
 using Wms.Core.Interfaces.Services.Audit;
 using Wms.Core.Interfaces.Services.Inventory;
 using Wms.Services.Base;
@@ -33,7 +33,7 @@ public class BatchService(
         cellRepository.Update(cell);
 
         await _repository.AddAsync(batch, cancellationToken);
-        
+
         await transactionService.AddTransactionAsync(
             batch.Id,
             batch.Quantity,
@@ -41,7 +41,7 @@ public class BatchService(
             userId,
             documentId,
             cancellationToken: cancellationToken);
-        
+
         await _repository.SaveChangesAsync(cancellationToken);
 
         return batch;
@@ -94,7 +94,7 @@ public class BatchService(
 
         batch.CellId = newCellId;
         batchRepository.Update(batch);
-        
+
         await transactionService.AddTransactionAsync(
             batch.Id,
             0,
@@ -104,28 +104,20 @@ public class BatchService(
             oldCell?.Id,
             newCell.Id,
             cancellationToken);
-        
+
         await batchRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<Batch>> GetBatchesWithFiltersAsync(
-        int? productId,
-        int? cellId,
-        DateTime? expiryFrom,
-        DateTime? expiryTo,
+    public async Task<PagedResult<Batch>> GetPagedBatchesWithFiltersAsync(
+        int? productId = null,
+        int? cellId = null,
+        DateTime? expiryFrom = null,
+        DateTime? expiryTo = null,
+        int pageNumber = 1,
+        int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var batches = await batchRepository.GetBatchesWithDetailsAsync(cancellationToken);
-
-        if (productId.HasValue)
-            batches = batches.Where(b => b.ProductId == productId.Value);
-        if (cellId.HasValue)
-            batches = batches.Where(b => b.CellId == cellId.Value);
-        if (expiryFrom.HasValue)
-            batches = batches.Where(b => b.ExpiryDate >= expiryFrom.Value);
-        if (expiryTo.HasValue)
-            batches = batches.Where(b => b.ExpiryDate <= expiryTo.Value);
-
-        return batches;
+        return await batchRepository.GetBatchesPagedFilteredAsync(
+            productId, cellId, expiryFrom, expiryTo, pageNumber, pageSize, cancellationToken);
     }
 }

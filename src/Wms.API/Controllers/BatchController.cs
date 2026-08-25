@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Batches;
 using Wms.API.Extensions;
+using Wms.Core.DTOs.Common;
 using Wms.Core.Entities;
 using Wms.Core.Interfaces.Services.Inventory;
 
@@ -18,23 +19,36 @@ public class BatchController(
     IBatchService batchService,
     IMapper mapper,
     IValidator<CreateBatchRequest> createBatchValidator,
-    IValidator<MoveBatchRequest> moveBatchValidator)
+    IValidator<MoveBatchRequest> moveBatchValidator,
+    IValidator<BatchFilterDto> filterBatchValidator)
     : ControllerBase
 {
-    /// <summary>Получить список партий с фильтрацией.</summary>
-    /// <returns>Список партий.</returns>
+    /// <summary>Получить список партий с фильтрацией и пагинацией.</summary>
+    /// <returns>Страница со списком партий и информацией о пагинации.</returns>
     [HttpGet]
-    public async Task<IActionResult> GetBatches(
-        [FromQuery] int? productId,
-        [FromQuery] int? cellId,
-        [FromQuery] DateTime? expiryFrom,
-        [FromQuery] DateTime? expiryTo,
+    public async Task<ActionResult<PagedResult<BatchDto>>> GetBatches(
+        [FromQuery] BatchFilterDto filter,
         CancellationToken cancellationToken)
     {
-        var batches =
-            await batchService.GetBatchesWithFiltersAsync(productId, cellId, expiryFrom, expiryTo, cancellationToken);
-        var dtos = mapper.Map<IEnumerable<BatchDto>>(batches);
-        return Ok(dtos);
+        await filterBatchValidator.ValidateAndThrowAsync(filter, cancellationToken);
+
+        var pagedResult = await batchService.GetPagedBatchesWithFiltersAsync(
+            filter.ProductId,
+            filter.CellId,
+            filter.ExpiryFrom,
+            filter.ExpiryTo,
+            filter.PageNumber,
+            filter.PageSize,
+            cancellationToken);
+
+        var dtoItems = mapper.Map<IEnumerable<BatchDto>>(pagedResult.Items);
+        var response = new PagedResult<BatchDto>(
+            dtoItems,
+            pagedResult.TotalCount,
+            pagedResult.PageNumber,
+            pagedResult.PageSize);
+
+        return Ok(response);
     }
 
     [HttpGet("{id}")]

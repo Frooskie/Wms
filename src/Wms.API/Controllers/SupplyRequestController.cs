@@ -15,14 +15,25 @@ namespace Wms.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Produces("application/json")]
 public class SupplyRequestController(
     ISupplyRequestService service,
     IMapper mapper,
     IValidator<CreateSupplyRequestRequest> createSupplyRequestValidator)
     : ControllerBase
 {
+    /// <summary>Создать новую заявку на поставку.</summary>
+    /// <param name="request">Данные заявки.</param>
+    /// <response code="201">Заявка создана.</response>
+    /// <response code="400">Ошибка валидации.</response>
+    /// <response code="401">Не авторизован.</response>
+    /// <response code="403">Недостаточно прав (только StoreDirector).</response>
     [HttpPost]
     [Authorize(Roles = "StoreDirector")]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(SupplyRequestDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<SupplyRequestDto>> Create([FromBody] CreateSupplyRequestRequest request,
         CancellationToken cancellationToken)
     {
@@ -47,7 +58,11 @@ public class SupplyRequestController(
     }
 
     /// <summary>Получить список заявок с фильтрацией по статусу и создателю.</summary>
+    /// <param name="status">Статус (необязательно).</param>
+    /// <param name="createdBy">Создатель (необязательно).</param>
+    /// <response code="200">Список заявок.</response>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<SupplyRequestDto>))]
     public async Task<ActionResult<IEnumerable<SupplyRequestDto>>> GetAll([FromQuery] string? status,
         [FromQuery] string? createdBy, CancellationToken cancellationToken)
     {
@@ -61,7 +76,13 @@ public class SupplyRequestController(
         return Ok(mapper.Map<IEnumerable<SupplyRequestDto>>(requests));
     }
 
+    /// <summary>Получить заявку по идентификатору.</summary>
+    /// <param name="id">Идентификатор заявки.</param>
+    /// <response code="200">Заявка найдена.</response>
+    /// <response code="404">Заявка не найдена.</response>
     [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SupplyRequestDto))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<SupplyRequestDto>> GetById(int id, CancellationToken cancellationToken)
     {
         var req = await service.GetByIdWithLinesAsync(id, cancellationToken);
@@ -71,10 +92,14 @@ public class SupplyRequestController(
     }
 
     /// <summary>Отправить заявку на рассмотрение. Доступно только создателю заявки.</summary>
+    /// <param name="id">Идентификатор заявки.</param>
     /// <response code="204">Заявка отправлена.</response>
     /// <response code="400">Заявка не в статусе Draft или не является создателем.</response>
     /// <response code="404">Заявка не найдена.</response>
     [HttpPut("{id}/submit")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Submit(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
@@ -83,8 +108,19 @@ public class SupplyRequestController(
     }
 
     /// <summary>Одобрить заявку (доступно Manager/Chief).</summary>
+    /// <param name="id">Идентификатор заявки.</param>
+    /// <response code="204">Заявка одобрена.</response>
+    /// <response code="400">Ошибка валидации или бизнес-правила.</response>
+    /// <response code="401">Не авторизован.</response>
+    /// <response code="403">Недостаточно прав.</response>
+    /// <response code="404">Заявка не найдена.</response>
     [HttpPut("{id}/approve")]
     [Authorize(Roles = "Manager,Chief")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Approve(int id, CancellationToken cancellationToken)
     {
         await service.ApproveAsync(id, cancellationToken);
@@ -92,8 +128,19 @@ public class SupplyRequestController(
     }
 
     /// <summary>Отклонить заявку (доступно Manager/Chief).</summary>
+    /// <param name="id">Идентификатор заявки.</param>
+    /// <response code="204">Заявка отклонена.</response>
+    /// <response code="400">Ошибка валидации или бизнес-правила.</response>
+    /// <response code="401">Не авторизован.</response>
+    /// <response code="403">Недостаточно прав.</response>
+    /// <response code="404">Заявка не найдена.</response>
     [HttpPut("{id}/reject")]
     [Authorize(Roles = "Manager,Chief")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Reject(int id, CancellationToken cancellationToken)
     {
         await service.RejectAsync(id, cancellationToken);

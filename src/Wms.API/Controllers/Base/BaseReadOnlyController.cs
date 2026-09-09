@@ -10,6 +10,7 @@ namespace Wms.API.Controllers.Base;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Produces("application/json")]
 public abstract class BaseReadOnlyController<TEntity, TDto>(IReadOnlyService<TEntity> service, IMapper mapper)
     : ControllerBase
     where TEntity : class
@@ -17,14 +18,23 @@ public abstract class BaseReadOnlyController<TEntity, TDto>(IReadOnlyService<TEn
 {
     protected readonly IMapper Mapper = mapper;
 
+    /// <summary>Получить все сущности.</summary>
+    /// <response code="200">Список сущностей.</response>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public virtual async Task<ActionResult<IEnumerable<TDto>>> GetAll(CancellationToken cancellationToken)
     {
         var entities = await service.GetAllAsync(cancellationToken);
         return Ok(Mapper.Map<IEnumerable<TDto>>(entities));
     }
 
+    /// <summary>Получить сущность по идентификатору.</summary>
+    /// <param name="id">Идентификатор.</param>
+    /// <response code="200">Сущность найдена.</response>
+    /// <response code="404">Сущность не найдена.</response>
     [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public virtual async Task<ActionResult<TDto>> GetById(int id, CancellationToken cancellationToken)
     {
         var entity = await service.GetByIdAsync(id, cancellationToken);
@@ -33,7 +43,11 @@ public abstract class BaseReadOnlyController<TEntity, TDto>(IReadOnlyService<TEn
         return Ok(Mapper.Map<TDto>(entity));
     }
 
+    /// <summary>Получить страницу сущностей с пагинацией.</summary>
+    /// <param name="request">Параметры пагинации.</param>
+    /// <response code="200">Страница сущностей.</response>
     [HttpGet("paged")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public virtual async Task<ActionResult<PagedResult<TDto>>> GetPaged(
         [FromQuery] PagedRequest request,
         CancellationToken cancellationToken)

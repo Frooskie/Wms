@@ -15,6 +15,7 @@ namespace Wms.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Produces("application/json")]
 public class ReceiptController(
     IReceiptService receiptService,
     IMapper mapper,
@@ -22,8 +23,15 @@ public class ReceiptController(
     IValidator<ReceiveReceiptRequest> receiveReceiptValidator) 
     : ControllerBase
 {
+    /// <summary>Создать документ приёмки.</summary>
+    /// <param name="request">Данные для создания приёмки.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    /// <response code="201">Документ приёмки создан. Возвращает созданный объект.</response>
+    /// <response code="400">Ошибка валидации.</response>
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ReceiptDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<ReceiptDto>> CreateReceipt([FromBody] CreateReceiptRequest request,
         CancellationToken cancellationToken)
     {
@@ -50,7 +58,11 @@ public class ReceiptController(
         return CreatedAtAction(nameof(GetReceipt), new { id = created.Id }, dto);
     }
 
+    /// <summary>Получить все документы приёмки.</summary>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    /// <response code="200">Список документов приёмки.</response>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ReceiptDto>))]
     public async Task<ActionResult<IEnumerable<ReceiptDto>>> GetReceipts(CancellationToken cancellationToken)
     {
         var receipts = await receiptService.GetAllReceiptsWithLinesAsync(cancellationToken);
@@ -59,7 +71,14 @@ public class ReceiptController(
         return Ok(dtos);
     }
 
+    /// <summary>Получить документ приёмки по идентификатору.</summary>
+    /// <param name="id">Идентификатор документа.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    /// <response code="200">Документ найден.</response>
+    /// <response code="404">Документ не найден.</response>
     [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ReceiptDto))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<ReceiptDto>> GetReceipt(int id, CancellationToken cancellationToken)
     {
         var receipt = await receiptService.GetReceiptWithLinesAsync(id, cancellationToken);
@@ -75,11 +94,17 @@ public class ReceiptController(
     /// <remarks>
     /// Если фактическое количество отличается от ожидаемого, разница фиксируется в комментарии документа Receipt.Comment.
     /// </remarks>
+    /// <param name="id">Идентификатор документа.</param>
+    /// <param name="request">Данные о фактически принятых товарах.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <response code="204">Приёмка успешно подтверждена.</response>
     /// <response code="400">Ошибка валидации или бизнес-правила (например, ячейка занята).</response>
     /// <response code="404">Документ не найден.</response>
     [HttpPut("{id}/receive")]
     [Authorize(Roles = "Manager,Chief,Worker")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> ReceiveReceipt(int id, [FromBody] ReceiveReceiptRequest request,
         CancellationToken cancellationToken)
     {
@@ -98,9 +123,13 @@ public class ReceiptController(
         return NoContent();
     }
 
-    /// <summary>Отклонить приёмку (доступно Manager/Chief). </summary>
+    /// <summary>Отклонить приёмку (доступно Manager/Chief).</summary>
+    /// <param name="id">Идентификатор документа.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    /// <response code="204">Приёмка отклонена.</response>
     [HttpPut("{id}/reject")]
     [Authorize(Roles = "Manager,Chief")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> RejectReceipt(int id, CancellationToken cancellationToken)
     {
         await receiptService.RejectReceiptAsync(id, cancellationToken);

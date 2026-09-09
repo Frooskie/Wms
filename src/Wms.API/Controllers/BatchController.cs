@@ -15,6 +15,8 @@ namespace Wms.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Produces("application/json")]
+[Consumes("application/json")]
 public class BatchController(
     IBatchService batchService,
     IMapper mapper,
@@ -25,7 +27,11 @@ public class BatchController(
 {
     /// <summary>Получить список партий с фильтрацией и пагинацией.</summary>
     /// <returns>Страница со списком партий и информацией о пагинации.</returns>
+    /// <response code="200">OK. Возвращает страницу с партиями.</response>
+    /// <response code="400">Ошибка валидации параметров фильтрации.</response>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PagedResult<BatchDto>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<PagedResult<BatchDto>>> GetBatches(
         [FromQuery] BatchFilterDto filter,
         CancellationToken cancellationToken)
@@ -51,7 +57,15 @@ public class BatchController(
         return Ok(response);
     }
 
+    /// <summary>Получить партию по идентификатору.</summary>
+    /// <param name="id">Идентификатор партии.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    /// <returns>DTO партии.</returns>
+    /// <response code="200">OK. Возвращает партию.</response>
+    /// <response code="404">Партия не найдена.</response>
     [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BatchDto))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetBatch(int id, CancellationToken cancellationToken)
     {
         var batch = await batchService.GetByIdAsync(id, cancellationToken);
@@ -63,14 +77,24 @@ public class BatchController(
     }
 
     /// <summary>Создать новую партию (только Manager/Chief).</summary>
+    /// <param name="request">Данные для создания партии.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <returns>Созданная партия.</returns>
+    /// <response code="201">Партия успешно создана. Возвращает DTO созданной партии.</response>
+    /// <response code="400">Ошибка валидации запроса.</response>
+    /// <response code="401">Пользователь не авторизован.</response>
+    /// <response code="403">Недостаточно прав (требуется Manager или Chief).</response>
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BatchDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> CreateBatch([FromBody] CreateBatchRequest request,
         CancellationToken cancellationToken)
     {
         await createBatchValidator.ValidateAndThrowAsync(request, cancellationToken);
-        
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
         var batch = mapper.Map<Batch>(request);
@@ -81,24 +105,45 @@ public class BatchController(
     }
 
     /// <summary>Переместить партию в другую ячейку (только Manager/Chief).</summary>
+    /// <param name="id">Идентификатор партии.</param>
+    /// <param name="request">Данные для перемещения (целевая ячейка).</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
     /// <response code="204">Успешное перемещение.</response>
     /// <response code="400">Целевая ячейка занята или не существует.</response>
+    /// <response code="401">Пользователь не авторизован.</response>
+    /// <response code="403">Недостаточно прав (требуется Manager или Chief).</response>
     /// <response code="404">Партия не найдена.</response>
     [HttpPut("{id}/move")]
     [Authorize(Roles = "Manager,Chief")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> MoveBatch(int id, [FromBody] MoveBatchRequest request,
         CancellationToken cancellationToken)
     {
         await moveBatchValidator.ValidateAndThrowAsync(request, cancellationToken);
-        
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
         await batchService.MoveBatchAsync(id, request.CellId, userId, cancellationToken);
         return NoContent();
     }
 
+    /// <summary>Удалить партию (только Manager/Chief).</summary>
+    /// <param name="id">Идентификатор партии.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    /// <response code="204">Партия успешно удалена.</response>
+    /// <response code="401">Пользователь не авторизован.</response>
+    /// <response code="403">Недостаточно прав (требуется Manager или Chief).</response>
+    /// <response code="404">Партия не найдена.</response>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Manager,Chief")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteBatch(int id, CancellationToken cancellationToken)
     {
         await batchService.DeleteBatchAsync(id, cancellationToken);

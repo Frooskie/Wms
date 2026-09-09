@@ -14,6 +14,7 @@ namespace Wms.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Produces("application/json")]
 public class InventoryTransactionsController(
     IInventoryTransactionService transactionService,
     IMapper mapper,
@@ -21,11 +22,15 @@ public class InventoryTransactionsController(
     : ControllerBase
 {
     /// <summary>Получить список транзакций с фильтрацией и пагинацией.</summary>
-    /// <returns>Список транзакций.</returns>
-    /// <remarks>
-    /// Доступно для Chief и Manager.
-    /// </remarks>
+    /// <param name="filter">Параметры фильтрации и пагинации.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    /// <returns>Страница транзакций.</returns>
+    /// <remarks>Доступно для Chief и Manager.</remarks>
+    /// <response code="200">Список транзакций успешно получен.</response>
+    /// <response code="400">Ошибка валидации фильтра.</response>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PagedResult<InventoryTransactionResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<PagedResult<InventoryTransactionResponseDto>>> GetTransactions(
         [FromQuery] TransactionFilterDto filter,
         CancellationToken cancellationToken)

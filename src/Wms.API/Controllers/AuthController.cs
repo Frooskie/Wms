@@ -9,9 +9,10 @@ using Wms.Core.Interfaces.Services.Auth;
 
 namespace Wms.API.Controllers;
 
-///<summary>Аутентификация и регистрация пользователей.</summary>
+/// <summary>Аутентификация и регистрация пользователей.</summary>
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class AuthController(
     UserManager<ApplicationUser> userManager,
     RoleManager<IdentityRole> roleManager,
@@ -20,18 +21,20 @@ public class AuthController(
     IValidator<RegisterRequest> registerValidator)
     : ControllerBase
 {
-    /// <summary>Вход в систему. Возвращает JWT-токен.</summary>
-    /// <returns>Токен и информация о пользователе.</returns>
-    /// <response code="200">Успешный вход.</response>
-    /// <response code="400">Ошибка валидации.</response>
+    /// <summary>Вход в систему. Возвращает JWT-токен и информацию о пользователе.</summary>
+    /// <response code="200">Успешный вход. Возвращает объект AuthResponse.</response>
+    /// <response code="400">Ошибка валидации запроса.</response>
     /// <response code="401">Неверные учётные данные.</response>
     [HttpPost("login")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Login(
         [FromBody] LoginRequest request,
         CancellationToken cancellationToken)
     {
         await loginValidator.ValidateAndThrowAsync(request, cancellationToken);
-        
+
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
             return Unauthorized("Invalid credentials");
@@ -47,21 +50,24 @@ public class AuthController(
             Roles = roles.ToList()
         });
     }
-    
+
     /// <summary>Регистрация нового пользователя. Доступно только для Chief.</summary>
-    /// <returns>Сообщение об успехе.</returns>
     /// <response code="200">Пользователь зарегистрирован.</response>
     /// <response code="400">Ошибка валидации или указана несуществующая роль.</response>
-    /// <response code="401">Не авторизован.</response>
-    /// <response code="403">Недостаточно прав (только Chief).</response>
+    /// <response code="401">Не авторизован (отсутствует JWT-токен).</response>
+    /// <response code="403">Недостаточно прав (требуется роль Chief).</response>
     [Authorize(Roles = "Chief")]
     [HttpPost("register")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegisterResponse))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Register(
         [FromBody] RegisterRequest request,
         CancellationToken cancellationToken)
     {
         await registerValidator.ValidateAndThrowAsync(request, cancellationToken);
-        
+
         var user = new ApplicationUser
         {
             UserName = request.Email,
@@ -81,6 +87,6 @@ public class AuthController(
             await userManager.AddToRoleAsync(user, request.Role);
         }
 
-        return Ok(new { Message = "User registered successfully" });
+        return Ok(new RegisterResponse { Message = "User registered successfully" });
     }
 }

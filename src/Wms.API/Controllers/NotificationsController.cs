@@ -9,10 +9,15 @@ namespace Wms.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Produces("application/json")]
 public class NotificationsController(INotificationService notificationService) : ControllerBase
 {
     /// <summary>Получить уведомления текущего пользователя.</summary>
+    /// <response code="200">Список уведомлений.</response>
+    /// <response code="401">Пользователь не авторизован.</response>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NotificationResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<IEnumerable<NotificationResponseDto>>> GetMyNotifications(
         [FromQuery] bool? isRead,
         CancellationToken cancellationToken)
@@ -30,7 +35,14 @@ public class NotificationsController(INotificationService notificationService) :
     }
 
     /// <summary>Отметить уведомление как прочитанное.</summary>
+    /// <param name="id">Идентификатор уведомления.</param>
+    /// <response code="204">Уведомление отмечено как прочитанное.</response>
+    /// <response code="401">Пользователь не авторизован.</response>
+    /// <response code="404">Уведомление не найдено или не принадлежит пользователю.</response>
     [HttpPut("{id}/read")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> MarkAsRead(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
@@ -40,7 +52,14 @@ public class NotificationsController(INotificationService notificationService) :
     }
 
     /// <summary>Удалить уведомление.</summary>
+    /// <param name="id">Идентификатор уведомления.</param>
+    /// <response code="204">Уведомление удалено.</response>
+    /// <response code="401">Пользователь не авторизован.</response>
+    /// <response code="404">Уведомление не найдено или не принадлежит пользователю.</response>
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value

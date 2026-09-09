@@ -23,7 +23,9 @@ public class ZoneController(
     }
 
     /// <summary>Получить все зоны с деталями (стеллажи, полки, ячейки).</summary>
+    /// <response code="200">Список зон с деталями.</response>
     [HttpGet("with-details")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ZoneDto>>> GetZonesWithDetails(CancellationToken cancellationToken)
     {
         var zones = await zoneService.GetZonesWithDetailsAsync(cancellationToken);

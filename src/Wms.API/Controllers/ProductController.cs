@@ -23,7 +23,10 @@ public class ProductController(
     }
 
     /// <summary>Поиск товаров по названию (частичное совпадение).</summary>
+    /// <param name="name">Название товара.</param>
+    /// <response code="200">Список найденных товаров.</response>
     [HttpGet("search")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProductDto>))]
     public async Task<ActionResult<IEnumerable<ProductDto>>> SearchByName([FromQuery] string name,
         CancellationToken cancellationToken)
     {
@@ -33,7 +36,10 @@ public class ProductController(
     }
 
     /// <summary>Получить товары по категории.</summary>
+    /// <param name="category">Категория.</param>
+    /// <response code="200">Список товаров в категории.</response>
     [HttpGet("category/{category}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProductDto>))]
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetByCategory(string category,
         CancellationToken cancellationToken)
     {

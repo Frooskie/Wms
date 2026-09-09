@@ -23,7 +23,9 @@ public class RackController(
     }
 
     /// <summary>Получить стеллажи с вложенными полками и ячейками.</summary>
+    /// <response code="200">Список стеллажей с полками и ячейками.</response>
     [HttpGet("with-shelves")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RackDto>))]
     public async Task<ActionResult<IEnumerable<RackDto>>> GetRacksWithShelvesAndCells(
         CancellationToken cancellationToken)
     {

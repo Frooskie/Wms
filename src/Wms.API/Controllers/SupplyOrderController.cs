@@ -15,14 +15,21 @@ namespace Wms.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Produces("application/json")]
 public class SupplyOrderController(
     ISupplyOrderService service,
     IMapper mapper,
     IValidator<CreateSupplyOrderRequest> createSupplyOrderValidator)
     : ControllerBase
 {
+    /// <summary>Создать новый заказ на отгрузку.</summary>
+    /// <param name="request">Данные для создания.</param>
+    /// <response code="201">Заказ создан. Возвращает созданный объект.</response>
+    /// <response code="400">Ошибка валидации.</response>
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     public async Task<ActionResult<SupplyOrderDto>> Create([FromBody] CreateSupplyOrderRequest request,
         CancellationToken cancellationToken)
     {
@@ -46,14 +53,23 @@ public class SupplyOrderController(
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, mapper.Map<SupplyOrderDto>(created));
     }
 
+    /// <summary>Получить все заказы.</summary>
+    /// <response code="200">Список заказов.</response>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<SupplyOrderDto>>> GetAll(CancellationToken cancellationToken)
     {
         var orders = await service.GetAllWithLinesAsync(cancellationToken);
         return Ok(mapper.Map<IEnumerable<SupplyOrderDto>>(orders));
     }
 
+    /// <summary>Получить заказ по идентификатору.</summary>
+    /// <param name="id">Идентификатор заказа.</param>
+    /// <response code="200">Заказ найден.</response>
+    /// <response code="404">Заказ не найден.</response>
     [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<SupplyOrderDto>> GetById(int id, CancellationToken cancellationToken)
     {
         var order = await service.GetByIdWithDetailsAsync(id, cancellationToken);
@@ -70,11 +86,15 @@ public class SupplyOrderController(
     /// Если суммарного доступного количества достаточно, создаются записи Reservation и обновляется ReservedQuantity.
     /// Если не хватает хотя бы для одной позиции, заказ не подтверждается.
     /// </remarks>
+    /// <param name="id">Идентификатор заказа.</param>
     /// <response code="204">Резервирование выполнено.</response>
     /// <response code="400">Недостаточно остатков или заказ уже подтверждён.</response>
     /// <response code="404">Заказ не найден.</response>
     [HttpPut("{id}/confirm")]
     [Authorize(Roles = "Manager,Chief")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Confirm(int id, CancellationToken cancellationToken)
     {
         await service.ConfirmOrderAsync(id, cancellationToken);
@@ -86,11 +106,15 @@ public class SupplyOrderController(
     /// Заказ должен быть в статусе Confirmed. Для каждой партии списывается зарезервированное количество,
     /// создаётся транзакция Out, резервы удаляются. Если партия становится пустой, ячейка освобождается.
     /// </remarks>
+    /// <param name="id">Идентификатор заказа.</param>
     /// <response code="204">Отгрузка выполнена.</response>
     /// <response code="400">Заказ не в статусе Confirmed.</response>
     /// <response code="404">Заказ не найден.</response>
     [HttpPut("{id}/ship")]
     [Authorize(Roles = "Manager,Chief,Worker")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Ship(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;

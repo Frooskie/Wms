@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Receipts;
 using Wms.API.Extensions;
+using Wms.Core.Constants;
 using Wms.Core.Entities;
 using Wms.Core.Enums;
+using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Services.Documents;
 
 namespace Wms.API.Controllers;
@@ -20,23 +22,22 @@ public class ReceiptController(
     IReceiptService receiptService,
     IMapper mapper,
     IValidator<CreateReceiptRequest> createReceiptValidator,
-    IValidator<ReceiveReceiptRequest> receiveReceiptValidator) 
+    IValidator<ReceiveReceiptRequest> receiveReceiptValidator)
     : ControllerBase
 {
     /// <summary>Создать документ приёмки.</summary>
-    /// <param name="request">Данные для создания приёмки.</param>
-    /// <param name="cancellationToken">Токен отмены.</param>
-    /// <response code="201">Документ приёмки создан. Возвращает созданный объект.</response>
+    /// <response code="201">Документ приёмки создан.</response>
     /// <response code="400">Ошибка валидации.</response>
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ReceiptDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-    public async Task<ActionResult<ReceiptDto>> CreateReceipt([FromBody] CreateReceiptRequest request,
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    public async Task<ActionResult<ReceiptDto>> CreateReceipt(
+        [FromBody] CreateReceiptRequest request,
         CancellationToken cancellationToken)
     {
         await createReceiptValidator.ValidateAndThrowAsync(request, cancellationToken);
-        
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         var receipt = new Receipt
         {
@@ -84,7 +85,7 @@ public class ReceiptController(
         var receipt = await receiptService.GetReceiptWithLinesAsync(id, cancellationToken);
 
         if (receipt == null)
-            return NotFound();
+            throw new NotFoundException(ErrorMessages.Receipt.NotFoundFormat(id));
 
         var dto = mapper.Map<ReceiptDto>(receipt);
         return Ok(dto);
@@ -103,13 +104,15 @@ public class ReceiptController(
     [HttpPut("{id}/receive")]
     [Authorize(Roles = "Manager,Chief,Worker")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
-    public async Task<IActionResult> ReceiveReceipt(int id, [FromBody] ReceiveReceiptRequest request,
+    public async Task<IActionResult> ReceiveReceipt(
+        int id,
+        [FromBody] ReceiveReceiptRequest request,
         CancellationToken cancellationToken)
     {
         await receiveReceiptValidator.ValidateAndThrowAsync(request, cancellationToken);
-        
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         var receiveLines = request.Lines.Select(l => (
             l.ProductId,

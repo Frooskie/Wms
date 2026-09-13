@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using FluentValidation;
+using Wms.Core.Constants;
 using Wms.Core.Enums;
 using Wms.API.DTOs.Transactions;
 using Wms.API.Extensions;
 using Wms.Core.DTOs.Common;
+using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Services.Audit;
 
 namespace Wms.API.Controllers;
@@ -27,21 +29,27 @@ public class InventoryTransactionsController(
     /// <returns>Страница транзакций.</returns>
     /// <remarks>Доступно для Chief и Manager.</remarks>
     /// <response code="200">Список транзакций успешно получен.</response>
-    /// <response code="400">Ошибка валидации фильтра.</response>
+    /// <response code="400">Ошибка валидации фильтра или неверное значение TransactionType.</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PagedResult<InventoryTransactionResponseDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<PagedResult<InventoryTransactionResponseDto>>> GetTransactions(
         [FromQuery] TransactionFilterDto filter,
         CancellationToken cancellationToken)
     {
         await transactionFilterDtoValidator.ValidateAndThrowAsync(filter, cancellationToken);
-        
+
         // Преобразуем строковый TransactionType в enum, если передан
         TransactionType? transactionType = null;
-        if (!string.IsNullOrEmpty(filter.TransactionType) &&
-            Enum.TryParse<TransactionType>(filter.TransactionType, true, out var parsed))
+        if (!string.IsNullOrEmpty(filter.TransactionType))
         {
+            if (!Enum.TryParse<TransactionType>(filter.TransactionType, true, out var parsed))
+                throw new BusinessRuleException(
+                    ErrorMessages.Transactions.InvalidTransactionTypeFormat(
+                        filter.TransactionType,
+                        string.Join(", ", Enum.GetNames<TransactionType>())),
+                    "INVALID_TRANSACTION_TYPE");
+
             transactionType = parsed;
         }
 

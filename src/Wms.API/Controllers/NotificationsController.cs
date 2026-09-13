@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Notifications;
+using Wms.Core.Constants;
+using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Services.Notifications;
 
 namespace Wms.API.Controllers;
@@ -22,8 +25,8 @@ public class NotificationsController(INotificationService notificationService) :
         [FromQuery] bool? isRead,
         CancellationToken cancellationToken)
     {
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                     ?? throw new UnauthorizedAccessException("User not authenticated");
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                     ?? throw new UnauthorizedException(ErrorMessages.Common.UserNotAuthenticated);
         var notifications = await notificationService.GetUserNotificationsAsync(userId, isRead, cancellationToken);
 
         return Ok(notifications.Select(n => new NotificationResponseDto(
@@ -45,8 +48,8 @@ public class NotificationsController(INotificationService notificationService) :
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> MarkAsRead(int id, CancellationToken cancellationToken)
     {
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                     ?? throw new UnauthorizedAccessException("User not authenticated");
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                     ?? throw new UnauthorizedException(ErrorMessages.Common.UserNotAuthenticated);
         await notificationService.MarkAsReadAsync(id, userId, cancellationToken);
         return NoContent();
     }
@@ -62,8 +65,8 @@ public class NotificationsController(INotificationService notificationService) :
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                     ?? throw new UnauthorizedAccessException("User not authenticated");
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                     ?? throw new UnauthorizedException(ErrorMessages.Common.UserNotAuthenticated);
         await notificationService.DeleteAsync(id, userId, cancellationToken);
         return NoContent();
     }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Services.Base;
 
 namespace Wms.API.Controllers.Base;
@@ -24,34 +25,39 @@ public abstract class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>(
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-    public virtual async Task<ActionResult<TDto>> Create([FromBody] TCreateDto createDto, CancellationToken cancellationToken)
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    public virtual async Task<ActionResult<TDto>> Create(
+        [FromBody] TCreateDto createDto,
+        CancellationToken cancellationToken)
     {
         var entity = Mapper.Map<TEntity>(createDto);
         var created = await service.CreateAsync(entity, cancellationToken);
         var dto = Mapper.Map<TDto>(created);
+        
         return CreatedAtAction(nameof(GetById), new { id = GetEntityId(created) }, dto);
     }
 
     /// <summary>Обновить сущность.</summary>
-    /// <param name="id">Идентификатор.</param>
-    /// <param name="updateDto">Данные для обновления.</param>
     /// <response code="204">Обновление выполнено успешно.</response>
     /// <response code="400">Ошибка валидации.</response>
     /// <response code="404">Сущность не найдена.</response>
     [HttpPut("{id}")]
     [Authorize(Roles = "Manager,Chief")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
-    public virtual async Task<IActionResult> Update(int id, [FromBody] TUpdateDto updateDto, CancellationToken cancellationToken)
+    public virtual async Task<IActionResult> Update(
+        int id,
+        [FromBody] TUpdateDto updateDto,
+        CancellationToken cancellationToken)
     {
         var existing = await service.GetByIdAsync(id, cancellationToken);
         if (existing == null)
-            return NotFound();
+            throw new NotFoundException(typeof(TEntity).Name, id);
 
         Mapper.Map(updateDto, existing);
         await service.UpdateAsync(existing, cancellationToken);
+        
         return NoContent();
     }
 
@@ -67,9 +73,10 @@ public abstract class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>(
     {
         var existing = await service.GetByIdAsync(id, cancellationToken);
         if (existing == null)
-            return NotFound();
+            throw new NotFoundException(typeof(TEntity).Name, id);
 
         await service.DeleteAsync(id, cancellationToken);
+        
         return NoContent();
     }
 

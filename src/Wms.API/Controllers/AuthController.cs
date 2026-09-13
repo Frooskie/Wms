@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Auth;
 using Wms.API.Extensions;
+using Wms.Core.Constants;
 using Wms.Core.Entities;
+using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Services.Auth;
 
 namespace Wms.API.Controllers;
@@ -27,7 +29,7 @@ public class AuthController(
     /// <response code="401">Неверные учётные данные.</response>
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Login(
         [FromBody] LoginRequest request,
@@ -37,7 +39,7 @@ public class AuthController(
 
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
-            return Unauthorized("Invalid credentials");
+            throw new UnauthorizedException(ErrorMessages.Auth.InvalidCredentials);
 
         var roles = await userManager.GetRolesAsync(user);
         var token = jwtService.GenerateToken(user, roles);
@@ -59,7 +61,7 @@ public class AuthController(
     [Authorize(Roles = "Chief")]
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegisterResponse))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Register(
@@ -77,16 +79,24 @@ public class AuthController(
 
         var result = await userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
-            return BadRequest(result.Errors);
+        {
+            var errors = result.Errors
+                .Select(e => new ValidationError(e.Code, e.Description))
+                .ToList();
+            throw new ModelValidationException(ErrorMessages.Auth.UserCreationFailed, errors);
+        }
 
         if (!string.IsNullOrEmpty(request.Role))
         {
             var roleExists = await roleManager.RoleExistsAsync(request.Role);
             if (!roleExists)
-                return BadRequest($"Role '{request.Role}' does not exist");
+                throw new BusinessRuleException(
+                    string.Format(ErrorMessages.Auth.RoleNotFoundFormat, request.Role),
+                    "ROLE_NOT_FOUND");
+            
             await userManager.AddToRoleAsync(user, request.Role);
         }
 
-        return Ok(new RegisterResponse { Message = "User registered successfully" });
+        return Ok(new RegisterResponse { Message = ErrorMessages.Success.UserRegistered });
     }
 }

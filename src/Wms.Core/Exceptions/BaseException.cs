@@ -2,11 +2,21 @@
 
 public abstract class BaseException : Exception
 {
-    protected BaseException(string message) : base(message)
+    /// <summary>
+    /// Машиночитаемый код ошибки. Используется клиентом (фронтендом)
+    /// для распознавания типа ошибки независимо от текста сообщения.
+    /// </summary>
+    public string Code { get; }
+
+    protected BaseException(string message, string code = "INTERNAL_ERROR")
+        : base(message)
     {
+        Code = code;
     }
 
-    protected BaseException(string message, Exception innerException) : base(message, innerException)
+    protected BaseException(string message, string code, Exception innerException)
+        : base(message, innerException)
     {
+        Code = code;
     }
 }

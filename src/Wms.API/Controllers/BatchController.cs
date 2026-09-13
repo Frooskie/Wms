@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Batches;
 using Wms.API.Extensions;
+using Wms.Core.Constants;
 using Wms.Core.DTOs.Common;
 using Wms.Core.Entities;
+using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Services.Inventory;
 
 namespace Wms.API.Controllers;
@@ -31,7 +33,7 @@ public class BatchController(
     /// <response code="400">Ошибка валидации параметров фильтрации.</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PagedResult<BatchDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<PagedResult<BatchDto>>> GetBatches(
         [FromQuery] BatchFilterDto filter,
         CancellationToken cancellationToken)
@@ -65,12 +67,12 @@ public class BatchController(
     /// <response code="404">Партия не найдена.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BatchDto))]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> GetBatch(int id, CancellationToken cancellationToken)
     {
         var batch = await batchService.GetByIdAsync(id, cancellationToken);
         if (batch == null)
-            return NotFound();
+            throw new NotFoundException(ErrorMessages.Batch.NotFoundFormat(id));
 
         var dto = mapper.Map<BatchDto>(batch);
         return Ok(dto);
@@ -87,9 +89,9 @@ public class BatchController(
     [HttpPost]
     [Authorize(Roles = "Manager,Chief")]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BatchDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> CreateBatch([FromBody] CreateBatchRequest request,
         CancellationToken cancellationToken)
     {
@@ -116,10 +118,10 @@ public class BatchController(
     [HttpPut("{id}/move")]
     [Authorize(Roles = "Manager,Chief")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> MoveBatch(int id, [FromBody] MoveBatchRequest request,
         CancellationToken cancellationToken)
     {
@@ -141,9 +143,9 @@ public class BatchController(
     [HttpDelete("{id}")]
     [Authorize(Roles = "Manager,Chief")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> DeleteBatch(int id, CancellationToken cancellationToken)
     {
         await batchService.DeleteBatchAsync(id, cancellationToken);

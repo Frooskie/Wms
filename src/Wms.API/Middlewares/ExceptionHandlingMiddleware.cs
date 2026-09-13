@@ -4,7 +4,10 @@ using Wms.Core.Exceptions;
 
 namespace Wms.API.Middlewares;
 
-public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+public class ExceptionHandlingMiddleware(
+    RequestDelegate next,
+    ILogger<ExceptionHandlingMiddleware> logger, 
+    IWebHostEnvironment env)
 {
     public async Task InvokeAsync(HttpContext context)
     {
@@ -14,6 +17,11 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         }
         catch (Exception ex)
         {
+            if (context.Response.HasStarted)
+            {
+                logger.LogError(ex, "Response has already started, cannot write error details.");
+                throw;
+            }
             await HandleExceptionAsync(context, ex);
         }
     }
@@ -25,16 +33,17 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
             NotFoundException => HttpStatusCode.NotFound,
             BusinessRuleException or ModelValidationException => HttpStatusCode.BadRequest,
             ForbiddenAccessException => HttpStatusCode.Forbidden,
+            UnauthorizedException => HttpStatusCode.Unauthorized,
             _ => HttpStatusCode.InternalServerError
         };
 
         context.Response.ContentType = "application/problem+json";
         context.Response.StatusCode = (int)statusCode;
         
-        if (exception is ModelValidationException)
-            logger.LogWarning(exception, "Model validation failed: {Message}", exception.Message);
+        if (statusCode == HttpStatusCode.InternalServerError)
+            logger.LogError(exception, "Unhandled exception: {Message}", exception.Message);
         else
-            logger.LogError(exception, "An unhandled exception occurred.");
+            logger.LogWarning(exception, "Client error ({Status}): {Message}", (int)statusCode, exception.Message);
         
         var problemDetails = new ProblemDetails
         {
@@ -48,6 +57,10 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
             }
         };
         
+        problemDetails.Extensions["code"] = exception is BaseException baseEx
+            ? baseEx.Code
+            : "INTERNAL_ERROR";
+        
         if (exception is ModelValidationException validationEx && validationEx.Errors.Any())
         {
             problemDetails.Extensions["errors"] = validationEx.Errors
@@ -59,7 +72,9 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         }
 
         // Детали для внутренних ошибок (только в dev)
-        if (statusCode == HttpStatusCode.InternalServerError && exception.InnerException != null)
+        if (statusCode == HttpStatusCode.InternalServerError 
+            && exception.InnerException != null 
+            && env.IsDevelopment())
         {
             problemDetails.Detail = exception.InnerException.Message;
         }

@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Wms.Core.Constants;
 using Wms.Core.Entities;
+using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Repositories;
-using Wms.Core.Interfaces.Services;
 using Wms.Core.Interfaces.Services.Notifications;
 
 namespace Wms.Services.Notifications;
@@ -23,9 +24,9 @@ public class NotificationService(
     {
         var notification = await notificationRepository.GetByIdAsync(notificationId, cancellationToken);
         if (notification is null)
-            throw new InvalidOperationException($"Notification with id {notificationId} not found.");
+            throw new NotFoundException(ErrorMessages.Notification.NotFoundFormat(notificationId));
         if (notification.UserId != userId)
-            throw new InvalidOperationException("You do not have access to this notification.");
+            throw new ForbiddenAccessException(ErrorMessages.Notification.AccessDenied);
 
         notification.IsRead = true;
         notificationRepository.Update(notification);
@@ -36,15 +37,18 @@ public class NotificationService(
     {
         var notification = await notificationRepository.GetByIdAsync(notificationId, cancellationToken);
         if (notification is null)
-            throw new InvalidOperationException($"Notification with id {notificationId} not found.");
+            throw new NotFoundException(ErrorMessages.Notification.NotFoundFormat(notificationId));
         if (notification.UserId != userId)
-            throw new InvalidOperationException("You do not have access to this notification.");
+            throw new ForbiddenAccessException(ErrorMessages.Notification.AccessDenied);
 
         notificationRepository.Delete(notification);
         await notificationRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task CreateNotificationAsync(string userId, string title, string message,
+    public async Task CreateNotificationAsync(
+        string userId,
+        string title,
+        string message,
         CancellationToken cancellationToken)
     {
         var notification = new Notification

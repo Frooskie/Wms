@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.Core.DTOs.common;
 using Wms.Core.DTOs.Common;
+using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Services.Base;
 
 namespace Wms.API.Controllers.Base;
@@ -39,7 +40,8 @@ public abstract class BaseReadOnlyController<TEntity, TDto>(IReadOnlyService<TEn
     {
         var entity = await service.GetByIdAsync(id, cancellationToken);
         if (entity == null)
-            return NotFound();
+            throw new NotFoundException(typeof(TEntity).Name, id);
+
         return Ok(Mapper.Map<TDto>(entity));
     }
 

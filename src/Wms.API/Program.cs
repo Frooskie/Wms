@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -29,6 +30,9 @@ using Wms.Services.Documents;
 using Wms.Services.Inventory;
 using Wms.Services.Notifications;
 using Wms.Services.WarehouseStructure;
+
+// Устанавливаем русскую культуру для сообщений FluentValidation
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru");
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Supply;
 using Wms.API.Extensions;
+using Wms.Core.Constants;
 using Wms.Core.Entities;
 using Wms.Core.Enums;
+using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Services.Documents;
 
 namespace Wms.API.Controllers;
@@ -31,7 +33,7 @@ public class SupplyRequestController(
     [HttpPost]
     [Authorize(Roles = "StoreDirector")]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(SupplyRequestDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<SupplyRequestDto>> Create([FromBody] CreateSupplyRequestRequest request,
@@ -61,15 +63,27 @@ public class SupplyRequestController(
     /// <param name="status">Статус (необязательно).</param>
     /// <param name="createdBy">Создатель (необязательно).</param>
     /// <response code="200">Список заявок.</response>
+    /// <response code="400">Неверное значение параметра status.</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<SupplyRequestDto>))]
-    public async Task<ActionResult<IEnumerable<SupplyRequestDto>>> GetAll([FromQuery] string? status,
-        [FromQuery] string? createdBy, CancellationToken cancellationToken)
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    public async Task<ActionResult<IEnumerable<SupplyRequestDto>>> GetAll(
+        [FromQuery] string? status,
+        [FromQuery] string? createdBy,
+        CancellationToken cancellationToken)
     {
         var requests = await service.GetAllWithLinesAsync(cancellationToken);
         
-        if (!string.IsNullOrEmpty(status) && Enum.TryParse<SupplyRequestStatus>(status, true, out var statusEnum))
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (!Enum.TryParse<SupplyRequestStatus>(status, true, out var statusEnum))
+                throw new BusinessRuleException(
+                    $"Недопустимое значение статуса '{status}'. Допустимые значения: {string.Join(", ", Enum.GetNames<SupplyRequestStatus>())}.",
+                    "INVALID_STATUS");
+            
             requests = requests.Where(r => r.Status == statusEnum);
+        }
+        
         if (!string.IsNullOrEmpty(createdBy))
             requests = requests.Where(r => r.CreatedBy == createdBy);
         
@@ -87,18 +101,21 @@ public class SupplyRequestController(
     {
         var req = await service.GetByIdWithLinesAsync(id, cancellationToken);
         if (req == null)
-            return NotFound();
+            throw new NotFoundException(ErrorMessages.SupplyRequest.NotFoundFormat(id));
+        
         return Ok(mapper.Map<SupplyRequestDto>(req));
     }
 
     /// <summary>Отправить заявку на рассмотрение. Доступно только создателю заявки.</summary>
     /// <param name="id">Идентификатор заявки.</param>
     /// <response code="204">Заявка отправлена.</response>
-    /// <response code="400">Заявка не в статусе Draft или не является создателем.</response>
+    /// <response code="400">Заявка не в статусе Draft.</response>
+    /// <response code="403">Пользователь не является создателем заявки.</response>
     /// <response code="404">Заявка не найдена.</response>
     [HttpPut("{id}/submit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Submit(int id, CancellationToken cancellationToken)
     {
@@ -110,7 +127,7 @@ public class SupplyRequestController(
     /// <summary>Одобрить заявку (доступно Manager/Chief).</summary>
     /// <param name="id">Идентификатор заявки.</param>
     /// <response code="204">Заявка одобрена.</response>
-    /// <response code="400">Ошибка валидации или бизнес-правила.</response>
+    /// <response code="400">Ошибка бизнес-правила.</response>
     /// <response code="401">Не авторизован.</response>
     /// <response code="403">Недостаточно прав.</response>
     /// <response code="404">Заявка не найдена.</response>
@@ -130,7 +147,7 @@ public class SupplyRequestController(
     /// <summary>Отклонить заявку (доступно Manager/Chief).</summary>
     /// <param name="id">Идентификатор заявки.</param>
     /// <response code="204">Заявка отклонена.</response>
-    /// <response code="400">Ошибка валидации или бизнес-правила.</response>
+    /// <response code="400">Ошибка бизнес-правила.</response>
     /// <response code="401">Не авторизован.</response>
     /// <response code="403">Недостаточно прав.</response>
     /// <response code="404">Заявка не найдена.</response>

@@ -1,4 +1,5 @@
-﻿using Wms.Core.DTOs.Common;
+﻿using Wms.Core.Constants;
+using Wms.Core.DTOs.Common;
 using Wms.Core.Entities;
 using Wms.Core.Enums;
 using Wms.Core.Exceptions;
@@ -23,11 +24,11 @@ public class BatchService(
     {
         var isOccupied = await batchRepository.IsCellOccupiedByOtherBatchAsync(batch.CellId, null, cancellationToken);
         if (isOccupied)
-            throw new BusinessRuleException("Cell is already occupied by another batch.");
+            throw new BusinessRuleException(ErrorMessages.Batch.CellOccupied, "CELL_OCCUPIED");
 
         var cell = await cellRepository.GetByIdAsync(batch.CellId, cancellationToken);
         if (cell == null)
-            throw new NotFoundException("Cell not found.");
+            throw new NotFoundException(ErrorMessages.Batch.CellNotFound);
 
         cell.IsOccupied = true;
         cellRepository.Update(cell);
@@ -51,7 +52,7 @@ public class BatchService(
     {
         var batch = await batchRepository.GetByIdAsync(id, cancellationToken);
         if (batch == null)
-            return;
+            throw new NotFoundException(ErrorMessages.Batch.NotFoundFormat(id));
 
         var cell = await cellRepository.GetByIdAsync(batch.CellId, cancellationToken);
         if (cell != null)
@@ -72,15 +73,15 @@ public class BatchService(
     {
         var batch = await batchRepository.GetBatchWithProductAndCellAsync(batchId, cancellationToken);
         if (batch == null)
-            throw new NotFoundException($"Batch with id {batchId} not found.");
+            throw new NotFoundException(ErrorMessages.Batch.NotFoundFormat(batchId));
 
         var newCell = await cellRepository.GetByIdAsync(newCellId, cancellationToken);
         if (newCell == null)
-            throw new NotFoundException("Target cell not found.");
+            throw new NotFoundException(ErrorMessages.Batch.TargetCellNotFound);
 
         var isOccupied = await batchRepository.IsCellOccupiedByOtherBatchAsync(newCellId, batchId, cancellationToken);
         if (isOccupied)
-            throw new BusinessRuleException("Target cell is already occupied.");
+            throw new BusinessRuleException(ErrorMessages.Batch.TargetCellOccupied, "TARGET_CELL_OCCUPIED");
 
         var oldCell = await cellRepository.GetByIdAsync(batch.CellId, cancellationToken);
         if (oldCell != null)

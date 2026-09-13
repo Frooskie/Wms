@@ -1,4 +1,5 @@
-﻿using Wms.Core.Entities;
+﻿using Wms.Core.Constants;
+using Wms.Core.Entities;
 using Wms.Core.Enums;
 using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Repositories;
@@ -27,7 +28,7 @@ public class SupplyOrderService(
         {
             var product = await productRepository.GetByIdAsync(line.ProductId, cancellationToken);
             if (product == null)
-                throw new NotFoundException(nameof(Product), line.ProductId);
+                throw new NotFoundException(ErrorMessages.Product.NotFoundFormat(line.ProductId));
         }
 
         order.Lines = lines;
@@ -55,11 +56,12 @@ public class SupplyOrderService(
     {
         var order = await orderRepository.GetSupplyOrderWithLinesAndReservationsAsync(orderId, cancellationToken);
         if (order == null)
-            throw new NotFoundException(nameof(SupplyOrder), orderId);
+            throw new NotFoundException(ErrorMessages.SupplyOrder.NotFoundFormat(orderId));
 
         if (order.Status != SupplyOrderStatus.Draft)
             throw new BusinessRuleException(
-                $"Cannot confirm order with status '{order.Status}'. Only Draft orders can be confirmed.");
+                ErrorMessages.SupplyOrder.OnlyDraftCanBeConfirmed(order.Status.ToString()),
+                "ORDER_NOT_DRAFT");
 
         var reservationsToCreate = new List<Reservation>();
         var batchesToUpdate = new List<Batch>();
@@ -107,7 +109,8 @@ public class SupplyOrderService(
 
             if (remainingToReserve > 0)
                 throw new BusinessRuleException(
-                    $"Not enough available stock for product ID {productId}. Missing {remainingToReserve} units.");
+                    ErrorMessages.SupplyOrder.NotEnoughStockFormat(productId, remainingToReserve),
+                    "NOT_ENOUGH_STOCK");
         }
 
         foreach (var reservation in reservationsToCreate)
@@ -130,15 +133,16 @@ public class SupplyOrderService(
     {
         var order = await orderRepository.GetSupplyOrderWithLinesAndReservationsAsync(orderId, cancellationToken);
         if (order == null)
-            throw new NotFoundException(nameof(SupplyOrder), orderId);
+            throw new NotFoundException(ErrorMessages.SupplyOrder.NotFoundFormat(orderId));
 
         if (order.Status != SupplyOrderStatus.Confirmed)
             throw new BusinessRuleException(
-                $"Cannot ship order with status '{order.Status}'. Only Confirmed orders can be shipped.");
+                ErrorMessages.SupplyOrder.OnlyConfirmedCanBeShipped(order.Status.ToString()),
+                "ORDER_NOT_CONFIRMED");
 
         var reservations = order.Reservations.ToList();
         if (reservations.Count == 0)
-            throw new BusinessRuleException("Order has no reservations. Cannot ship.");
+            throw new BusinessRuleException(ErrorMessages.SupplyOrder.NoReservations, "ORDER_HAS_NO_RESERVATIONS");
 
         // Группируем резервы по партии
         var groupedReservations = reservations
@@ -158,7 +162,7 @@ public class SupplyOrderService(
         {
             var batch = await batchRepository.GetByIdAsync(group.BatchId, cancellationToken);
             if (batch == null)
-                throw new NotFoundException(nameof(Batch), group.BatchId);
+                throw new NotFoundException(ErrorMessages.Batch.NotFoundFormat(group.BatchId));
 
             // Списываем зарезервированное количество
             batch.Quantity -= group.TotalReserved;
@@ -175,7 +179,7 @@ public class SupplyOrderService(
             }
 
             batchesToUpdate.Add(batch);
-            
+
             await transactionService.AddTransactionAsync(
                 batch.Id,
                 -group.TotalReserved,

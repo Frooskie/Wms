@@ -12,7 +12,6 @@ namespace Wms.UnitTests.Services;
 public class ReceiptServiceTests
 {
     private readonly Mock<IReceiptRepository> _receiptRepositoryMock;
-    private readonly Mock<IRepository<ReceiptLine>> _receiptLineRepositoryMock;
     private readonly Mock<IProductRepository> _productRepositoryMock;
     private readonly Mock<ICellRepository> _cellRepositoryMock;
     private readonly Mock<IBatchService> _batchServiceMock;
@@ -21,13 +20,11 @@ public class ReceiptServiceTests
     public ReceiptServiceTests()
     {
         _receiptRepositoryMock = new Mock<IReceiptRepository>();
-        _receiptLineRepositoryMock = new Mock<IRepository<ReceiptLine>>();
         _productRepositoryMock = new Mock<IProductRepository>();
         _cellRepositoryMock = new Mock<ICellRepository>();
         _batchServiceMock = new Mock<IBatchService>();
         _receiptService = new ReceiptService(
             _receiptRepositoryMock.Object,
-            _receiptLineRepositoryMock.Object,
             _productRepositoryMock.Object,
             _cellRepositoryMock.Object,
             _batchServiceMock.Object);
@@ -94,7 +91,7 @@ public class ReceiptServiceTests
     }
 
     [Fact]
-    public async Task ReceiveReceiptAsync_ShouldThrowInvalidOperationException_WhenCellIsOccupied()
+    public async Task ReceiveReceiptAsync_ShouldThrowBusinessRuleException_WhenCellIsOccupied()
     {
         const int receiptId = 1;
         const string userId = "user123";
@@ -129,7 +126,7 @@ public class ReceiptServiceTests
             await _receiptService.ReceiveReceiptAsync(receiptId, receiveLines, userId, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
+        await act.Should().ThrowAsync<BusinessRuleException>()
             .WithMessage($"Cell {cell.Code} is already occupied.");
     }
 
@@ -152,6 +149,6 @@ public class ReceiptServiceTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
-            .WithMessage($"Receipt with id {receiptId} not found.");
+            .WithMessage($"Entity 'Receipt' with id '{receiptId}' was not found.");
     }
 }

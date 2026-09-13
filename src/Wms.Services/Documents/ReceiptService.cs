@@ -1,8 +1,8 @@
-﻿using Wms.Core.Entities;
+﻿using Wms.Core.Constants;
+using Wms.Core.Entities;
 using Wms.Core.Enums;
 using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Repositories;
-using Wms.Core.Interfaces.Services;
 using Wms.Core.Interfaces.Services.Documents;
 using Wms.Core.Interfaces.Services.Inventory;
 
@@ -10,39 +10,45 @@ namespace Wms.Services.Documents;
 
 public class ReceiptService(
     IReceiptRepository receiptRepository,
-    IRepository<ReceiptLine> receiptLineRepository,
     IProductRepository productRepository,
     ICellRepository cellRepository,
     IBatchService batchService)
     : IReceiptService
 {
-    public async Task<Receipt> CreateReceiptAsync(Receipt receipt, List<ReceiptLine> lines,
+    public async Task<Receipt> CreateReceiptAsync(
+        Receipt receipt,
+        List<ReceiptLine> lines,
         CancellationToken cancellationToken = default)
     {
         foreach (var line in lines)
         {
             var product = await productRepository.GetByIdAsync(line.ProductId, cancellationToken);
             if (product == null)
-                throw new InvalidOperationException($"Product with id {line.ProductId} not found.");
+                throw new NotFoundException(ErrorMessages.Product.NotFoundFormat(line.ProductId));
         }
 
         receipt.Lines = lines;
         await receiptRepository.AddAsync(receipt, cancellationToken);
         await receiptRepository.SaveChangesAsync(cancellationToken);
+
         return receipt;
     }
 
-    public async Task<Receipt?> GetReceiptWithLinesAsync(int receiptId, CancellationToken cancellationToken = default)
+    public async Task<Receipt?> GetReceiptWithLinesAsync(
+        int receiptId,
+        CancellationToken cancellationToken = default)
     {
         return await receiptRepository.GetReceiptWithLinesAsync(receiptId, cancellationToken);
     }
 
-    public async Task<IEnumerable<Receipt>> GetAllReceiptsWithLinesAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Receipt>> GetAllReceiptsWithLinesAsync(
+        CancellationToken cancellationToken = default)
     {
         return await receiptRepository.GetReceiptsWithLinesAsync(cancellationToken);
     }
 
-    public async Task ReceiveReceiptAsync(int receiptId,
+    public async Task ReceiveReceiptAsync(
+        int receiptId,
         List<(int productId, int actualQuantity, int cellId, DateTime expiryDate, decimal purchasePrice)> receiveLines,
         string userId,
         CancellationToken cancellationToken = default)
@@ -50,18 +56,22 @@ public class ReceiptService(
         var receipt = await receiptRepository.GetReceiptWithLinesAsync(receiptId, cancellationToken);
 
         if (receipt == null)
-            throw new NotFoundException($"Receipt with id {receiptId} not found.");
+            throw new NotFoundException(ErrorMessages.Receipt.NotFoundFormat(receiptId));
+
         if (receipt.Status != ReceiptStatus.Pending)
-            throw new InvalidOperationException($"Receipt is already {receipt.Status}.");
+            throw new BusinessRuleException(
+                ErrorMessages.Receipt.AlreadyProcessedFormat(receipt.Status.ToString()),
+                "RECEIPT_ALREADY_PROCESSED");
 
         foreach (var line in receiveLines)
         {
             var cell = await cellRepository.GetByIdAsync(line.cellId, cancellationToken);
 
             if (cell == null)
-                throw new InvalidOperationException($"Cell with id {line.cellId} not found.");
+                throw new NotFoundException(ErrorMessages.Receipt.CellNotFound(line.cellId));
+
             if (cell.IsOccupied)
-                throw new InvalidOperationException($"Cell {cell.Code} is already occupied.");
+                throw new BusinessRuleException(ErrorMessages.Receipt.CellOccupied(cell.Code), "CELL_OCCUPIED");
         }
 
         foreach (var line in receiveLines)
@@ -87,14 +97,20 @@ public class ReceiptService(
         {
             var actualLine = receiveLines.FirstOrDefault(l => l.productId == expectedLine.ProductId);
             if (actualLine == default)
-                discrepancies.Add(
-                    $"Product {expectedLine.ProductId}: expected {expectedLine.ExpectedQuantity}, but actual missing.");
+                discrepancies.Add(string.Format(
+                    ErrorMessages.Receipt.DiscrepancyMissing,
+                    expectedLine.ProductId,
+                    expectedLine.ExpectedQuantity));
             else if (actualLine.actualQuantity != expectedLine.ExpectedQuantity)
-                discrepancies.Add(
-                    $"Product {expectedLine.ProductId}: expected {expectedLine.ExpectedQuantity}, actual {actualLine.actualQuantity}.");
+                discrepancies.Add(string.Format(
+                    ErrorMessages.Receipt.DiscrepancyQuantity,
+                    expectedLine.ProductId,
+                    expectedLine.ExpectedQuantity,
+                    actualLine.actualQuantity));
         }
 
-        if (discrepancies.Count != 0) receipt.Comment = string.Join("; ", discrepancies);
+        if (discrepancies.Count != 0)
+            receipt.Comment = string.Join("; ", discrepancies);
 
         receipt.Status = ReceiptStatus.Received;
         receiptRepository.Update(receipt);
@@ -107,9 +123,12 @@ public class ReceiptService(
         var receipt = await receiptRepository.GetByIdAsync(receiptId, cancellationToken);
 
         if (receipt == null)
-            throw new NotFoundException($"Receipt with id {receiptId} not found.");
+            throw new NotFoundException(ErrorMessages.Receipt.NotFoundFormat(receiptId));
+
         if (receipt.Status != ReceiptStatus.Pending)
-            throw new InvalidOperationException($"Receipt is already {receipt.Status}.");
+            throw new BusinessRuleException(
+                ErrorMessages.Receipt.AlreadyProcessedFormat(receipt.Status.ToString()),
+                "RECEIPT_ALREADY_PROCESSED");
 
         receipt.Status = ReceiptStatus.Rejected;
         receiptRepository.Update(receipt);

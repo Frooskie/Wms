@@ -2,12 +2,13 @@
 
 public class NotFoundException : BaseException
 {
-    public NotFoundException(string message) : base(message)
+    public NotFoundException(string message)
+        : base(message, "NOT_FOUND")
     {
     }
 
     public NotFoundException(string entityName, object id)
-        : base($"Entity '{entityName}' with id '{id}' was not found.")
+        : base($"Entity '{entityName}' with id '{id}' was not found.", "NOT_FOUND")
     {
     }
 }

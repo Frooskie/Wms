@@ -1,7 +1,9 @@
-﻿namespace Wms.Core.Exceptions;
+﻿using Wms.Core.Constants;
+
+namespace Wms.Core.Exceptions;
 
 public class ModelValidationException(string message, IEnumerable<ValidationError>? errors = null)
-    : BaseException(message, "VALIDATION_FAILED")
+    : BaseException(message, ErrorCodes.ValidationFailed)
 {
     public IEnumerable<ValidationError> Errors { get; } = errors ?? [];
 }

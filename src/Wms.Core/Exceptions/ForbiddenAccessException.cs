@@ -1,4 +1,6 @@
-﻿namespace Wms.Core.Exceptions;
+﻿using Wms.Core.Constants;
+
+namespace Wms.Core.Exceptions;
 
 public class ForbiddenAccessException(string message = "You do not have permission to perform this action.")
-    : BaseException(message, "FORBIDDEN");
+    : BaseException(message, ErrorCodes.Forbidden);

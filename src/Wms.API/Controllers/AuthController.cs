@@ -92,7 +92,7 @@ public class AuthController(
             if (!roleExists)
                 throw new BusinessRuleException(
                     string.Format(ErrorMessages.Auth.RoleNotFoundFormat, request.Role),
-                    "ROLE_NOT_FOUND");
+                    ErrorCodes.RoleNotFound);
             
             await userManager.AddToRoleAsync(user, request.Role);
         }

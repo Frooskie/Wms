@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Moq;
+using Wms.Core.Constants;
 using Wms.Core.Entities;
 using Wms.Core.Enums;
 using Wms.Core.Exceptions;
@@ -115,7 +116,8 @@ public class BatchServiceTests
 
         // Assert
         await act.Should().ThrowAsync<BusinessRuleException>()
-            .WithMessage("Target cell is already occupied.");
+            .Where(ex => ex.Code == ErrorCodes.TargetCellOccupied)
+            .WithMessage(ErrorMessages.Batch.TargetCellOccupied);
     }
 
     [Fact]
@@ -135,7 +137,8 @@ public class BatchServiceTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
-            .WithMessage($"Batch with id {batchId} not found.");
+            .Where(ex => ex.Code == ErrorCodes.NotFound)
+            .WithMessage(ErrorMessages.Batch.NotFoundFormat(batchId));
     }
 
     [Fact]
@@ -161,6 +164,7 @@ public class BatchServiceTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
-            .WithMessage("Target cell not found.");
+            .Where(ex => ex.Code == ErrorCodes.NotFound)
+            .WithMessage(ErrorMessages.Batch.TargetCellNotFound);
     }
 }

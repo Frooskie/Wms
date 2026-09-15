@@ -79,7 +79,7 @@ public class SupplyRequestController(
             if (!Enum.TryParse<SupplyRequestStatus>(status, true, out var statusEnum))
                 throw new BusinessRuleException(
                     $"Недопустимое значение статуса '{status}'. Допустимые значения: {string.Join(", ", Enum.GetNames<SupplyRequestStatus>())}.",
-                    "INVALID_STATUS");
+                    ErrorCodes.InvalidStatus);
             
             requests = requests.Where(r => r.Status == statusEnum);
         }

@@ -50,7 +50,7 @@ public class SupplyRequestService(
         if (request.CreatedBy != currentUserId)
             throw new ForbiddenAccessException(ErrorMessages.SupplyRequest.OnlyCreatorCanSubmit);
         if (request.Status != SupplyRequestStatus.Draft)
-            throw new BusinessRuleException(ErrorMessages.SupplyRequest.OnlyDraftCanBeSubmitted, "REQUEST_NOT_DRAFT");
+            throw new BusinessRuleException(ErrorMessages.SupplyRequest.OnlyDraftCanBeSubmitted, ErrorCodes.RequestNotDraft);
 
         request.Status = SupplyRequestStatus.Submitted;
         request.SubmittedAt = DateTime.UtcNow;
@@ -66,7 +66,7 @@ public class SupplyRequestService(
         if (request == null)
             throw new NotFoundException(ErrorMessages.SupplyRequest.NotFoundFormat(id));
         if (request.Status != SupplyRequestStatus.Submitted)
-            throw new BusinessRuleException(ErrorMessages.SupplyRequest.OnlySubmittedCanBeApproved, "REQUEST_NOT_SUBMITTED");
+            throw new BusinessRuleException(ErrorMessages.SupplyRequest.OnlySubmittedCanBeApproved, ErrorCodes.RequestNotSubmitted);
 
         request.Status = SupplyRequestStatus.Approved;
         request.ApprovedAt = DateTime.UtcNow;
@@ -82,7 +82,7 @@ public class SupplyRequestService(
         if (request == null)
             throw new NotFoundException(ErrorMessages.SupplyRequest.NotFoundFormat(id));
         if (request.Status != SupplyRequestStatus.Submitted && request.Status != SupplyRequestStatus.Draft)
-            throw new BusinessRuleException(ErrorMessages.SupplyRequest.OnlyDraftOrSubmittedCanBeRejected, "REQUEST_NOT_REJECTABLE");
+            throw new BusinessRuleException(ErrorMessages.SupplyRequest.OnlyDraftOrSubmittedCanBeRejected, ErrorCodes.RequestNotRejectable);
         
         request.Status = SupplyRequestStatus.Rejected;
         request.RejectedAt = DateTime.UtcNow;

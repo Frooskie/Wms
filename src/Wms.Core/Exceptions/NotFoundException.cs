@@ -1,14 +1,16 @@
-﻿namespace Wms.Core.Exceptions;
+﻿using Wms.Core.Constants;
+
+namespace Wms.Core.Exceptions;
 
 public class NotFoundException : BaseException
 {
     public NotFoundException(string message)
-        : base(message, "NOT_FOUND")
+        : base(message, ErrorCodes.NotFound)
     {
     }
 
     public NotFoundException(string entityName, object id)
-        : base($"Entity '{entityName}' with id '{id}' was not found.", "NOT_FOUND")
+        : base($"Entity '{entityName}' with id '{id}' was not found.", ErrorCodes.NotFound)
     {
     }
 }

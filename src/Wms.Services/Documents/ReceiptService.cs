@@ -61,7 +61,7 @@ public class ReceiptService(
         if (receipt.Status != ReceiptStatus.Pending)
             throw new BusinessRuleException(
                 ErrorMessages.Receipt.AlreadyProcessedFormat(receipt.Status.ToString()),
-                "RECEIPT_ALREADY_PROCESSED");
+                ErrorCodes.ReceiptAlreadyProcessed);
 
         foreach (var line in receiveLines)
         {
@@ -71,7 +71,7 @@ public class ReceiptService(
                 throw new NotFoundException(ErrorMessages.Receipt.CellNotFound(line.cellId));
 
             if (cell.IsOccupied)
-                throw new BusinessRuleException(ErrorMessages.Receipt.CellOccupied(cell.Code), "CELL_OCCUPIED");
+                throw new BusinessRuleException(ErrorMessages.Receipt.CellOccupied(cell.Code), ErrorCodes.CellOccupied);
         }
 
         foreach (var line in receiveLines)
@@ -128,7 +128,7 @@ public class ReceiptService(
         if (receipt.Status != ReceiptStatus.Pending)
             throw new BusinessRuleException(
                 ErrorMessages.Receipt.AlreadyProcessedFormat(receipt.Status.ToString()),
-                "RECEIPT_ALREADY_PROCESSED");
+                ErrorCodes.ReceiptAlreadyProcessed);
 
         receipt.Status = ReceiptStatus.Rejected;
         receiptRepository.Update(receipt);

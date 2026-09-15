@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Moq;
+using Wms.Core.Constants;
 using Wms.Core.Entities;
 using Wms.Core.Enums;
 using Wms.Core.Exceptions;
@@ -77,7 +78,8 @@ public class ReceiptServiceTests
 
         // Assert
         receipt.Status.Should().Be(ReceiptStatus.Received);
-        receipt.Comment.Should().Contain($"expected {expectedQty}, actual {actualQty}");
+        receipt.Comment.Should().Contain(
+            string.Format(ErrorMessages.Receipt.DiscrepancyQuantity, productId, expectedQty, actualQty));
 
         _batchServiceMock.Verify(bs => bs.CreateBatchAsync(
                 It.Is<Batch>(b => b.Quantity == actualQty && b.CellId == cellId),
@@ -127,7 +129,8 @@ public class ReceiptServiceTests
 
         // Assert
         await act.Should().ThrowAsync<BusinessRuleException>()
-            .WithMessage($"Cell {cell.Code} is already occupied.");
+            .Where(ex => ex.Code == ErrorCodes.CellOccupied)
+            .WithMessage(ErrorMessages.Receipt.CellOccupied(cell.Code));
     }
 
     [Fact]
@@ -149,6 +152,7 @@ public class ReceiptServiceTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
-            .WithMessage($"Entity 'Receipt' with id '{receiptId}' was not found.");
+            .Where(ex => ex.Code == ErrorCodes.NotFound)
+            .WithMessage(ErrorMessages.Receipt.NotFoundFormat(receiptId));
     }
 }

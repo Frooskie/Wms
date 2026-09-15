@@ -61,7 +61,7 @@ public class SupplyOrderService(
         if (order.Status != SupplyOrderStatus.Draft)
             throw new BusinessRuleException(
                 ErrorMessages.SupplyOrder.OnlyDraftCanBeConfirmed(order.Status.ToString()),
-                "ORDER_NOT_DRAFT");
+                ErrorCodes.OrderNotDraft);
 
         var reservationsToCreate = new List<Reservation>();
         var batchesToUpdate = new List<Batch>();
@@ -110,7 +110,7 @@ public class SupplyOrderService(
             if (remainingToReserve > 0)
                 throw new BusinessRuleException(
                     ErrorMessages.SupplyOrder.NotEnoughStockFormat(productId, remainingToReserve),
-                    "NOT_ENOUGH_STOCK");
+                    ErrorCodes.NotEnoughStock);
         }
 
         foreach (var reservation in reservationsToCreate)
@@ -138,11 +138,11 @@ public class SupplyOrderService(
         if (order.Status != SupplyOrderStatus.Confirmed)
             throw new BusinessRuleException(
                 ErrorMessages.SupplyOrder.OnlyConfirmedCanBeShipped(order.Status.ToString()),
-                "ORDER_NOT_CONFIRMED");
+                ErrorCodes.OrderNotConfirmed);
 
         var reservations = order.Reservations.ToList();
         if (reservations.Count == 0)
-            throw new BusinessRuleException(ErrorMessages.SupplyOrder.NoReservations, "ORDER_HAS_NO_RESERVATIONS");
+            throw new BusinessRuleException(ErrorMessages.SupplyOrder.NoReservations, ErrorCodes.OrderHasNoReservations);
 
         // Группируем резервы по партии
         var groupedReservations = reservations

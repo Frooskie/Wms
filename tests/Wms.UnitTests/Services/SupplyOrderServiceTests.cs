@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Moq;
+using Wms.Core.Constants;
 using Wms.Core.Entities;
 using Wms.Core.Enums;
 using Wms.Core.Exceptions;
@@ -103,6 +104,7 @@ public class SupplyOrderServiceTests
         const int orderId = 1;
         const int productId = 100;
         const int requestedQty = 30;
+        const int missingQty = 20;
 
         var order = new SupplyOrder
         {
@@ -129,7 +131,8 @@ public class SupplyOrderServiceTests
 
         // Assert
         await act.Should().ThrowAsync<BusinessRuleException>()
-            .WithMessage($"Not enough available stock for product ID {productId}. Missing 20 units.");
+            .Where(ex => ex.Code == ErrorCodes.NotEnoughStock)
+            .WithMessage(ErrorMessages.SupplyOrder.NotEnoughStockFormat(productId, missingQty));
     }
 
     [Fact]
@@ -224,6 +227,7 @@ public class SupplyOrderServiceTests
 
         // Assert
         await act.Should().ThrowAsync<BusinessRuleException>()
-            .WithMessage($"Cannot ship order with status '{SupplyOrderStatus.Draft}'. Only Confirmed orders can be shipped.");
+            .Where(ex => ex.Code == ErrorCodes.OrderNotConfirmed)
+            .WithMessage(ErrorMessages.SupplyOrder.OnlyConfirmedCanBeShipped(SupplyOrderStatus.Draft.ToString()));
     }
 }

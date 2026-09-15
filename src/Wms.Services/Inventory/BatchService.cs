@@ -24,7 +24,7 @@ public class BatchService(
     {
         var isOccupied = await batchRepository.IsCellOccupiedByOtherBatchAsync(batch.CellId, null, cancellationToken);
         if (isOccupied)
-            throw new BusinessRuleException(ErrorMessages.Batch.CellOccupied, "CELL_OCCUPIED");
+            throw new BusinessRuleException(ErrorMessages.Batch.CellOccupied, ErrorCodes.CellOccupied);
 
         var cell = await cellRepository.GetByIdAsync(batch.CellId, cancellationToken);
         if (cell == null)
@@ -81,7 +81,7 @@ public class BatchService(
 
         var isOccupied = await batchRepository.IsCellOccupiedByOtherBatchAsync(newCellId, batchId, cancellationToken);
         if (isOccupied)
-            throw new BusinessRuleException(ErrorMessages.Batch.TargetCellOccupied, "TARGET_CELL_OCCUPIED");
+            throw new BusinessRuleException(ErrorMessages.Batch.TargetCellOccupied, ErrorCodes.TargetCellOccupied);
 
         var oldCell = await cellRepository.GetByIdAsync(batch.CellId, cancellationToken);
         if (oldCell != null)

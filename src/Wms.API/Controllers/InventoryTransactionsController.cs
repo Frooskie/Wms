@@ -48,7 +48,7 @@ public class InventoryTransactionsController(
                     ErrorMessages.Transactions.InvalidTransactionTypeFormat(
                         filter.TransactionType,
                         string.Join(", ", Enum.GetNames<TransactionType>())),
-                    "INVALID_TRANSACTION_TYPE");
+                    ErrorCodes.InvalidTransactionType);
 
             transactionType = parsed;
         }

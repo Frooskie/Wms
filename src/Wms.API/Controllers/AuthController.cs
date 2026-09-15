@@ -58,7 +58,7 @@ public class AuthController(
     /// <response code="400">Ошибка валидации или указана несуществующая роль.</response>
     /// <response code="401">Не авторизован (отсутствует JWT-токен).</response>
     /// <response code="403">Недостаточно прав (требуется роль Chief).</response>
-    [Authorize(Roles = "Chief")]
+    [Authorize(Roles = Roles.Chief)]
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegisterResponse))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]

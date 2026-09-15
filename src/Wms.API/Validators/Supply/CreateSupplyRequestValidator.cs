@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Wms.API.DTOs.Supply;
+using Wms.Core.Constants;
 
 namespace Wms.API.Validators.Supply;
 
@@ -11,8 +12,8 @@ public class CreateSupplyRequestValidator : AbstractValidator<CreateSupplyReques
             .NotEmpty().MaximumLength(100);
 
         RuleFor(x => x.Lines)
-            .NotNull().WithMessage("Lines are required.")
-            .Must(list => list.Count > 0).WithMessage("At least one line is required.");
+            .NotNull().WithMessage(ErrorMessages.Validation.LinesRequired)
+            .Must(list => list.Count > 0).WithMessage(ErrorMessages.Validation.AtLeastOneLineRequired);
 
         RuleForEach(x => x.Lines)
             .SetValidator(new SupplyRequestLineValidator());

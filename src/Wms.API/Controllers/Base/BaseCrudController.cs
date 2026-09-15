@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wms.Core.Constants;
 using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Services.Base;
 
@@ -23,7 +24,7 @@ public abstract class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>(
     /// <response code="201">Сущность создана. Возвращает созданный объект.</response>
     /// <response code="400">Ошибка валидации.</response>
     [HttpPost]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     public virtual async Task<ActionResult<TDto>> Create(
@@ -42,7 +43,7 @@ public abstract class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>(
     /// <response code="400">Ошибка валидации.</response>
     /// <response code="404">Сущность не найдена.</response>
     [HttpPut("{id}")]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
@@ -66,7 +67,7 @@ public abstract class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>(
     /// <response code="204">Удаление выполнено успешно.</response>
     /// <response code="404">Сущность не найдена.</response>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     public virtual async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)

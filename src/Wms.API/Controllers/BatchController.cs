@@ -87,7 +87,7 @@ public class BatchController(
     /// <response code="401">Пользователь не авторизован.</response>
     /// <response code="403">Недостаточно прав (требуется Manager или Chief).</response>
     [HttpPost]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BatchDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
@@ -116,7 +116,7 @@ public class BatchController(
     /// <response code="403">Недостаточно прав (требуется Manager или Chief).</response>
     /// <response code="404">Партия не найдена.</response>
     [HttpPut("{id}/move")]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
@@ -141,7 +141,7 @@ public class BatchController(
     /// <response code="403">Недостаточно прав (требуется Manager или Chief).</response>
     /// <response code="404">Партия не найдена.</response>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]

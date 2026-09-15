@@ -29,7 +29,7 @@ public class ReceiptController(
     /// <response code="201">Документ приёмки создан.</response>
     /// <response code="400">Ошибка валидации.</response>
     [HttpPost]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ReceiptDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<ReceiptDto>> CreateReceipt(
@@ -102,7 +102,7 @@ public class ReceiptController(
     /// <response code="400">Ошибка валидации или бизнес-правила (например, ячейка занята).</response>
     /// <response code="404">Документ не найден.</response>
     [HttpPut("{id}/receive")]
-    [Authorize(Roles = "Manager,Chief,Worker")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief + "," + Roles.Worker)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
@@ -131,7 +131,7 @@ public class ReceiptController(
     /// <param name="cancellationToken">Токен отмены.</param>
     /// <response code="204">Приёмка отклонена.</response>
     [HttpPut("{id}/reject")]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> RejectReceipt(int id, CancellationToken cancellationToken)
     {

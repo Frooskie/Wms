@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Wms.API.DTOs.Receipts;
+using Wms.Core.Constants;
 
 namespace Wms.API.Validators.Receipts;
 
@@ -17,7 +18,8 @@ public class ReceiveReceiptLineValidator : AbstractValidator<ReceiveReceiptLineR
             .GreaterThan(0);
 
         RuleFor(x => x.ExpiryDate)
-            .GreaterThan(DateTime.UtcNow).WithMessage("Expiry date must be in the future.");
+            .Must(date => date > DateTime.UtcNow)
+            .WithMessage(ErrorMessages.Receipt.ExpiryDateMustBeFuture);
 
         RuleFor(x => x.PurchasePrice)
             .GreaterThanOrEqualTo(0);

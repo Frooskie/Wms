@@ -29,7 +29,7 @@ public class SupplyOrderController(
     /// <response code="201">Заказ создан. Возвращает созданный объект.</response>
     /// <response code="400">Ошибка валидации.</response>
     [HttpPost]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<SupplyOrderDto>> Create(
@@ -94,7 +94,7 @@ public class SupplyOrderController(
     /// <response code="400">Недостаточно остатков или заказ уже подтверждён.</response>
     /// <response code="404">Заказ не найден.</response>
     [HttpPut("{id}/confirm")]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
@@ -114,7 +114,7 @@ public class SupplyOrderController(
     /// <response code="400">Заказ не в статусе Confirmed.</response>
     /// <response code="404">Заказ не найден.</response>
     [HttpPut("{id}/ship")]
-    [Authorize(Roles = "Manager,Chief,Worker")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief + "," + Roles.Worker)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]

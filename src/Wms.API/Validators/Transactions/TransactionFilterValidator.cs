@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Wms.API.DTOs.Transactions;
+using Wms.Core.Constants;
 using Wms.Core.Enums;
 
 namespace Wms.API.Validators.Transactions;
@@ -11,33 +12,34 @@ public class TransactionFilterValidator : AbstractValidator<TransactionFilterDto
         RuleFor(x => x.BatchId)
             .GreaterThan(0)
             .When(x => x.BatchId.HasValue)
-            .WithMessage("BatchId must be positive if specified.");
-        
+            .WithMessage(ErrorMessages.Validation.MustBePositiveIfSpecified);
+
         RuleFor(x => x.ProductId)
             .GreaterThan(0)
             .When(x => x.ProductId.HasValue)
-            .WithMessage("ProductId must be positive if specified.");
-        
+            .WithMessage(ErrorMessages.Validation.MustBePositiveIfSpecified);
+
         RuleFor(x => x.UserId)
             .NotEmpty()
             .When(x => !string.IsNullOrWhiteSpace(x.UserId))
-            .WithMessage("UserId must not be empty if specified.");
-        
+            .WithMessage(ErrorMessages.Validation.MustNotBeEmptyIfSpecified);
+
         RuleFor(x => x.TransactionType)
-            .Must(value => string.IsNullOrEmpty(value) || Enum.IsDefined(typeof(TransactionType), value))
-            .WithMessage("Invalid TransactionType. Allowed values: In, Out, Move, WriteOff.");
-        
+            .Must(value => string.IsNullOrEmpty(value)
+                           || Enum.TryParse<TransactionType>(value, true, out _))
+            .WithMessage(ErrorMessages.Transactions.InvalidTransactionType);
+
         RuleFor(x => x.FromDate)
             .LessThanOrEqualTo(x => x.ToDate)
             .When(x => x.FromDate.HasValue && x.ToDate.HasValue)
-            .WithMessage("FromDate must be less than or equal to ToDate.");
-        
+            .WithMessage(ErrorMessages.Validation.DateRangeInvalid);
+
         RuleFor(x => x.PageNumber)
             .GreaterThanOrEqualTo(1)
-            .WithMessage("PageNumber must be greater than or equal to 1.");
+            .WithMessage(ErrorMessages.Validation.PageNumberMin);
 
         RuleFor(x => x.PageSize)
             .InclusiveBetween(1, 100)
-            .WithMessage("PageSize must be between 1 and 100.");
+            .WithMessage(ErrorMessages.Validation.PageSizeRange);
     }
 }

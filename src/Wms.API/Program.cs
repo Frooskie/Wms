@@ -3,13 +3,17 @@ using System.Text;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Wms.API.MappingProfiles;
 using Wms.API.Middlewares;
+using Wms.API.Validators;
 using Wms.API.Validators.Auth;
+using Wms.Core.Constants;
 using Wms.Core.Entities;
+using Wms.Core.Exceptions;
 using Wms.Core.Interfaces;
 using Wms.Core.Interfaces.Repositories;
 using Wms.Core.Interfaces.Services;
@@ -22,6 +26,7 @@ using Wms.Core.Interfaces.Services.WarehouseStructure;
 using Wms.Core.Options;
 using Wms.Infrastructure.Data;
 using Wms.Infrastructure.Data.Seed;
+using Wms.Infrastructure.Identity;
 using Wms.Infrastructure.Repositories;
 using Wms.Services.Audit;
 using Wms.Services.Auth;
@@ -43,9 +48,26 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddErrorDescriber<RussianIdentityErrorDescriber>()
     .AddDefaultTokenProviders(); // для сброса пароля
 
 builder.Services.AddControllers();
+
+// Для единообразия форматов ответов с ошибками
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(e => e.Value?.Errors.Count > 0)
+            .SelectMany(kvp => kvp.Value!.Errors.Select(err =>
+                new ValidationError(kvp.Key, err.ErrorMessage)))
+            .ToList();
+
+        throw new ModelValidationException(ErrorMessages.Common.InvalidRequest, errors);
+    };
+});
+
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Swagger
@@ -139,6 +161,12 @@ builder.Services.AddScoped<IInventoryTransactionService, InventoryTransactionSer
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddHostedService<NotificationBackgroundService>();
+
+// Устанавливаем русскую культуру для встроенных сообщений FluentValidation
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru");
+// Настраиваем перевод имён свойств во всех сообщениях валидации
+ValidatorOptions.DisplayNameResolver = (type, memberInfo, expression) =>
+    memberInfo is null ? null : PropertyDisplayNames.Resolve(memberInfo.Name);
 
 builder.Services.AddValidatorsFromAssemblyContaining<LoginValidator>();
 

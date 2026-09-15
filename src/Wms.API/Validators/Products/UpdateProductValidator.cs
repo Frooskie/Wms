@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Wms.API.DTOs.Products;
+using Wms.Core.Constants;
 
 namespace Wms.API.Validators.Products;
 
@@ -14,6 +15,7 @@ public class UpdateProductValidator : AbstractValidator<UpdateProductRequest>
             .NotEmpty().MaximumLength(20);
 
         RuleFor(x => x.MinStockThreshold)
-            .GreaterThanOrEqualTo(0).WithMessage("MinStockThreshold must be non-negative.");
+            .GreaterThanOrEqualTo(0)
+            .WithMessage(ErrorMessages.Product.MinStockThresholdNonNegative);
     }
 }

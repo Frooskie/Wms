@@ -31,7 +31,7 @@ public class SupplyRequestController(
     /// <response code="401">Не авторизован.</response>
     /// <response code="403">Недостаточно прав (только StoreDirector).</response>
     [HttpPost]
-    [Authorize(Roles = "StoreDirector")]
+    [Authorize(Roles = Roles.StoreDirector)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(SupplyRequestDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -132,7 +132,7 @@ public class SupplyRequestController(
     /// <response code="403">Недостаточно прав.</response>
     /// <response code="404">Заявка не найдена.</response>
     [HttpPut("{id}/approve")]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -152,7 +152,7 @@ public class SupplyRequestController(
     /// <response code="403">Недостаточно прав.</response>
     /// <response code="404">Заявка не найдена.</response>
     [HttpPut("{id}/reject")]
-    [Authorize(Roles = "Manager,Chief")]
+    [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

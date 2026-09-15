@@ -27,6 +27,22 @@ public static class ErrorMessages
         public const string InvalidFormat = "Некорректный формат значения.";
         public const string TooLong = "Значение слишком длинное.";
         public const string TooShort = "Значение слишком короткое.";
+        public const string LinesRequired = "Позиции обязательны для заполнения.";
+        public const string AtLeastOneLineRequired = "Должна быть указана хотя бы одна позиция.";
+        public const string MustBePositiveIfSpecified = "Значение должно быть положительным, если указано.";
+        public const string MustNotBeEmptyIfSpecified = "Значение не должно быть пустым, если указано.";
+        public const string InvalidEnumValue = "Недопустимое значение.";
+        public const string DateRangeInvalid = "Дата начала не может быть позже даты окончания.";
+        public const string PageSizeRange = "Размер страницы должен быть от 1 до 100.";
+        public const string PageNumberMin = "Номер страницы должен быть не меньше 1.";
+        public const string EmailRequired = "Email обязателен для заполнения.";
+        public const string InvalidEmailFormat = "Некорректный формат email.";
+        public const string PasswordRequired = "Пароль обязателен для заполнения.";
+        public const string FullNameRequired = "Полное имя обязательно для заполнения.";
+        public const string RoleRequired = "Роль обязательна для заполнения.";
+
+        public static string PasswordMinLength(int min) =>
+            $"Пароль должен содержать минимум {min} символов.";
 
         public static string MaxLength(int max) =>
             $"Длина не должна превышать {max} символов.";
@@ -48,12 +64,16 @@ public static class ErrorMessages
         public const string UserCreationFailed = "Не удалось создать пользователя.";
         public const string RoleNotFoundFormat = "Роль '{0}' не существует.";
         public const string PasswordsDoNotMatch = "Пароли не совпадают.";
+        
+        public static string RoleMustBeOneOfFormat(string allowed) =>
+            $"Роль должна быть одной из: {allowed}.";
     }
 
     /// <summary>Сообщения, связанные с товарами.</summary>
     public static class Product
     {
         public const string NotFound = "Товар не найден.";
+        public const string MinStockThresholdNonNegative = "Минимальный порог остатка не может быть отрицательным.";
 
         public static string NotFoundFormat(int id) =>
             $"Товар с идентификатором {id} не найден.";
@@ -67,6 +87,12 @@ public static class ErrorMessages
         public const string CellOccupied = "Ячейка уже занята другой партией.";
         public const string TargetCellNotFound = "Целевая ячейка не найдена.";
         public const string TargetCellOccupied = "Целевая ячейка уже занята.";
+        public const string PurchasePriceNegative = "Закупочная цена не может быть отрицательной.";
+        public const string ProductionDateInFuture = "Дата производства не может быть в будущем.";
+        public const string ExpiryDateMustBeFuture = "Срок годности должен быть в будущем.";
+        public const string ExpiryDateAfterProduction = "Срок годности должен быть позже даты производства.";
+        public const string CellIdPositive = "Идентификатор ячейки должен быть положительным числом.";
+        public const string ExpiryFromAfterExpiryTo = "Дата начала срока годности должна быть не позже даты окончания.";
 
         public static string NotFoundFormat(int id) =>
             $"Партия с идентификатором {id} не найдена.";
@@ -90,6 +116,7 @@ public static class ErrorMessages
     {
         public const string NotFound = "Документ приёмки не найден.";
         public const string AlreadyProcessed = "Документ приёмки уже обработан.";
+        public const string ExpiryDateMustBeFuture = "Срок годности должен быть в будущем.";
 
         public static string NotFoundFormat(int id) =>
             $"Документ приёмки с идентификатором {id} не найден.";

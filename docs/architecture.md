@@ -43,6 +43,10 @@ API знает о Infrastructure только через DI (регистрац�
   - `ICrudService<T>` – наследует `IReadOnlyService<T>` и добавляет методы изменения (`Create`, `Update`, `Delete`).
 - **Options** – классы конфигурации (например, `JwtSettings`).
 - **Exceptions** – пользовательские исключения.
+- **Constants** – единые реестры для всего проекта:
+  - `ErrorMessages` – все тексты сообщений об ошибках на русском языке (сгруппированы по домену: `Auth`, `Product`, `Batch`, `Receipt`, `SupplyOrder` и т.д.). Позволяет менять формулировки в одном месте.
+  - `ErrorCodes` – машиночитаемые коды ошибок (`NOT_FOUND`, `CELL_OCCUPIED`, `NOT_ENOUGH_STOCK` и др.). Используются в исключениях, тестах и фронтенде.
+  - `Roles` – константы ролей (`Chief`, `Manager`, `Worker`, `StoreDirector`) и коллекция `Roles.All`. Единый источник правды для `[Authorize(Roles = ...)]`, сидера и валидаторов.
 
 **Зависимости:**
 - `Microsoft.AspNetCore.Identity.EntityFrameworkCore` – для `ApplicationUser` (компромисс, позволяющий использовать Identity без привязки к Infrastructure).
@@ -82,6 +86,7 @@ API знает о Infrastructure только через DI (регистрац�
 - **Сервис уведомлений (`NotificationService`)** – реализует `INotificationService`: получение уведомлений пользователя, отметка о прочтении, удаление, а также массовое создание уведомлений для всех менеджеров.
 - **Фоновый сервис (`NotificationBackgroundService`)** – периодически (каждый час) проверяет сроки годности и низкие остатки, создаёт уведомления для всех менеджеров.
 - **Auth/JwtService** – реализация генерации JWT-токенов.
+- **Identity/RussianIdentityErrorDescriber** (в слое Infrastructure) – переопределяет тексты ошибок ASP.NET Core Identity (сложность пароля, дубликаты email и т.д.) на русские.
 - **BackgroundServices** – фоновые задачи (уведомления о сроках годности, низких остатках).
 - **Валидаторы** – если используем FluentValidation.
 
@@ -107,6 +112,7 @@ API знает о Infrastructure только через DI (регистрац�
 - **Middlewares** – глобальная обработка исключений, логирование.
 - **Extensions** – методы расширения для регистрации сервисов в DI.
 - **Validators** – классы валидации на основе FluentValidation для всех входных DTO.
+- **Validators/PropertyDisplayNames** – словарь переводов имён свойств DTO (`Name` → `Название`, `Quantity` → `Количество`). Позволяет один раз задать перевод для всех валидаторов сразу.
 - **Program.cs** – настройка хоста, DI, конвейер middleware.
 - **XML-комментарии** – для всех контроллеров и DTO используются стандартные XML-комментарии (`/// <summary>`, `/// <param>`, `/// <returns>`). Swagger автоматически подхватывает их для генерации документации, что гарантирует актуальность описаний и упрощает поддержку.
 
@@ -227,6 +233,8 @@ API знает о Infrastructure только через DI (регистрац�
 - `status` – HTTP-статус;
 - `instance` – путь запроса;
 - `traceId` – уникальный идентификатор запроса (берётся из `HttpContext.TraceIdentifier`), позволяющий сопоставить ошибку с логами.
+- `code` содержит **машиночитаемый код ошибки**, определённый в `Wms.Core.Constants.ErrorCodes`. Он формируется в `BaseException.Code`. Это позволяет фронтенду обрабатывать ошибки **по коду**, а не по тексту — устойчиво к изменениям формулировок и локализации.
+
 
 Для ошибок валидации (`ModelValidationException`) в ответ добавляется поле `errors` – словарь, где ключ – имя поля, а значение – массив сообщений об ошибках. Это упрощает отображение ошибок на клиенте (например, подсветка полей формы).
 
@@ -243,49 +251,115 @@ API знает о Infrastructure только через DI (регистрац�
 В контроллерах валидация выполняется явно (через вызов `ValidateAndThrowAsync`) или через базовый класс `BaseCrudControllerWithValidation`, который автоматически проверяет DTO перед передачей в сервис.
 При нарушении правил генерируется `ModelValidationException`, которое перехватывается глобальным middleware и возвращает клиенту структурированный ответ.
 
+### Локализация валидации
+
+Все сообщения FluentValidation возвращаются на русском языке. Используются три механизма:
+
+1. **`CultureInfo.DefaultThreadCurrentUICulture = "ru"`** – переводит встроенные сообщения FluentValidation (`NotEmpty`, `MaximumLength`, `GreaterThan` и т.д.).
+2. **`ValidatorOptions.DisplayNameResolver`** – подменяет имена свойств в шаблонах сообщений (`{PropertyName}`) на русские, используя словарь `PropertyDisplayNames`.
+3. **`ErrorMessages.Validation`** – кастомные сообщения для нестандартных правил (`LinesRequired`, `AtLeastOneLineRequired` и т.д.).
+
+### Валидация ModelState
+
+Ошибки встроенной валидации `[ApiController]` (невалидный JSON, отсутствующие поля, неверные типы) перехватываются через `ApiBehaviorOptions.InvalidModelStateResponseFactory` и **преобразуются в `ModelValidationException`**. Это обеспечивает единый формат ответа через middleware вместо стандартного `ValidationProblemDetails` от ASP.NET Core.
+
+Технические сообщения ModelState (например, `"The JSON value could not be converted..."`) **не локализуются** — они предназначены для разработчиков, а не для конечных пользователей. Фронтенд должен валидировать форму до отправки, поэтому эти ошибки в нормальной работе не доходят до пользователя.
+
 ---
 
 
 ### 3.10. Формат ответов об ошибках (Problem Details)
 
-Все ошибки API возвращаются в формате `application/problem+json`. 
+Все ошибки API возвращаются в формате `application/problem+json` (RFC 7807) с единым набором полей:
 
-Пример ответа для ошибки валидации:
+| Поле | Описание |
+|------|----------|
+| `type` | Имя класса исключения (например, `ModelValidationException`). |
+| `title` | Краткое сообщение об ошибке (русское). |
+| `status` | HTTP-статус. |
+| `instance` | Путь запроса. |
+| `traceId` | Уникальный идентификатор запроса для связи с логами. |
+| `code` | Машиночитаемый код ошибки из `ErrorCodes`. |
+| `errors` | Словарь ошибок по полям (только для `ModelValidationException`). |
+| `detail` | Детали внутреннего исключения (только в dev-окружении для 500). |
+
+#### Пример: ошибка валидации
+
 ```json
 {
   "type": "ModelValidationException",
-  "title": "Name: Name is required; MinStockThreshold: MinStockThreshold must be non-negative.",
+  "title": "Некорректный запрос.",
   "status": 400,
   "instance": "/api/products",
   "traceId": "0HLO1K7...",
+  "code": "VALIDATION_FAILED",
   "errors": {
-    "Name": ["Name is required."],
-    "MinStockThreshold": ["MinStockThreshold must be non-negative."]
+    "Name": ["'Название' не должно быть пустым."],
+    "MinStockThreshold": ["Минимальный порог остатка не может быть отрицательным."]
   }
 }
 ```
 
-Пример для бизнес-ошибки (`BusinessRuleException`):
+#### Пример: бизнес-ошибка
+
 ```json
 {
   "type": "BusinessRuleException",
-  "title": "Not enough available stock for product ID 42. Missing 10 units.",
+  "title": "Целевая ячейка уже занята.",
   "status": 400,
-  "instance": "/api/supply-orders/5/confirm",
-  "traceId": "0HLO1K8..."
+  "instance": "/api/batch/1/move",
+  "traceId": "0HLO1K8...",
+  "code": "TARGET_CELL_OCCUPIED"
 }
 ```
 
-Пример для не найденного ресурса (`NotFoundException`):
+#### Пример: не найдено
+
 ```json
 {
   "type": "NotFoundException",
-  "title": "Product with id 999 not found.",
+  "title": "Партия с идентификатором 999 не найдена.",
   "status": 404,
-  "instance": "/api/products/999",
-  "traceId": "0HLO1K9..."
+  "instance": "/api/batch/999",
+  "traceId": "0HLO1K9...",
+  "code": "NOT_FOUND"
 }
 ```
+
+#### Пример: ошибка аутентификации
+
+```json
+{
+  "type": "UnauthorizedException",
+  "title": "Неверный email или пароль.",
+  "status": 401,
+  "instance": "/api/auth/login",
+  "traceId": "0HLO1KA...",
+  "code": "UNAUTHORIZED"
+}
+```
+
+#### Пример: ошибка Identity
+
+```json
+{
+  "type": "ModelValidationException",
+  "title": "Не удалось создать пользователя.",
+  "status": 400,
+  "instance": "/api/auth/register",
+  "traceId": "0HLO1KB...",
+  "code": "VALIDATION_FAILED",
+  "errors": {
+    "PasswordTooShort": ["Пароль должен содержать минимум 6 символов."],
+    "PasswordRequiresDigit": ["Пароль должен содержать хотя бы одну цифру ('0'-'9')."]
+  }
+}
+```
+
+#### Логирование
+
+- **Warning** – ошибки клиента (400, 401, 403, 404). Ожидаемые ситуации.
+- **Error** – ошибки сервера (500). Требуют внимания разработчика.
 ---
 
 ### 3.11. Пагинация
@@ -377,6 +451,8 @@ SupplyRequest ──< RequestLine (продукты)
   - `Worker` – просмотр, подтверждение отгрузки и приёмки.
   - `StoreDirector` – создание заявок на поставку и просмотр их статуса.
 - Все эндпоинты, кроме `login` и `register`, требуют аутентификации (`[Authorize]`).
+
+Все роли определены в `Wms.Core.Constants.Roles`. Использование строковых литералов (`"Manager"`, `"Chief"`) в коде **не рекомендуется**. Это устраняет риск опечаток, которые не ловятся компилятором.
 
 ---
 

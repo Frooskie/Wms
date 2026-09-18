@@ -1,12 +1,13 @@
 ﻿using System.Net;
-using Microsoft.AspNetCore.Mvc;
+using Wms.API.DTOs.Common;
+using Wms.Core.Constants;
 using Wms.Core.Exceptions;
 
 namespace Wms.API.Middlewares;
 
 public class ExceptionHandlingMiddleware(
     RequestDelegate next,
-    ILogger<ExceptionHandlingMiddleware> logger, 
+    ILogger<ExceptionHandlingMiddleware> logger,
     IWebHostEnvironment env)
 {
     public async Task InvokeAsync(HttpContext context)
@@ -22,6 +23,7 @@ public class ExceptionHandlingMiddleware(
                 logger.LogError(ex, "Response has already started, cannot write error details.");
                 throw;
             }
+
             await HandleExceptionAsync(context, ex);
         }
     }
@@ -36,49 +38,44 @@ public class ExceptionHandlingMiddleware(
             UnauthorizedException => HttpStatusCode.Unauthorized,
             _ => HttpStatusCode.InternalServerError
         };
-
-        context.Response.ContentType = "application/problem+json";
-        context.Response.StatusCode = (int)statusCode;
         
         if (statusCode == HttpStatusCode.InternalServerError)
             logger.LogError(exception, "Unhandled exception: {Message}", exception.Message);
         else
             logger.LogWarning(exception, "Client error ({Status}): {Message}", (int)statusCode, exception.Message);
         
-        var problemDetails = new ProblemDetails
+        var problem = new WmsProblemDetails
         {
             Type = exception.GetType().Name,
             Title = exception.Message,
             Status = (int)statusCode,
             Instance = context.Request.Path,
-            Extensions =
-            {
-                ["traceId"] = context.TraceIdentifier
-            }
+            Code = (exception as BaseException)?.Code ?? ErrorCodes.InternalError,
+            TraceId = context.TraceIdentifier,
+            Errors = BuildErrors(exception)
         };
         
-        problemDetails.Extensions["code"] = exception is BaseException baseEx
-            ? baseEx.Code
-            : "INTERNAL_ERROR";
-        
-        if (exception is ModelValidationException validationEx && validationEx.Errors.Any())
-        {
-            problemDetails.Extensions["errors"] = validationEx.Errors
-                .GroupBy(e => e.PropertyName)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(e => e.ErrorMessage).ToArray()
-                );
-        }
-
-        // Детали для внутренних ошибок (только в dev)
-        if (statusCode == HttpStatusCode.InternalServerError 
-            && exception.InnerException != null 
+        if (statusCode == HttpStatusCode.InternalServerError
+            && exception.InnerException != null
             && env.IsDevelopment())
         {
-            problemDetails.Detail = exception.InnerException.Message;
+            problem.Detail = exception.InnerException.Message;
         }
 
-        return context.Response.WriteAsJsonAsync(problemDetails);
+        context.Response.ContentType = "application/problem+json";
+        context.Response.StatusCode = (int)statusCode;
+        return context.Response.WriteAsJsonAsync(problem);
+    }
+
+    private static IDictionary<string, string[]>? BuildErrors(Exception exception)
+    {
+        if (exception is not ModelValidationException mve || !mve.Errors.Any())
+            return null;
+
+        return mve.Errors
+            .GroupBy(e => e.PropertyName)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(e => e.ErrorMessage).ToArray());
     }
 }

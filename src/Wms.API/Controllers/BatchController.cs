@@ -4,6 +4,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wms.API.DTOs.Batches;
+using Wms.API.DTOs.Common;
 using Wms.API.Extensions;
 using Wms.Core.Constants;
 using Wms.Core.DTOs.Common;
@@ -33,7 +34,7 @@ public class BatchController(
     /// <response code="400">Ошибка валидации параметров фильтрации.</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PagedResult<BatchDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
     public async Task<ActionResult<PagedResult<BatchDto>>> GetBatches(
         [FromQuery] BatchFilterDto filter,
         CancellationToken cancellationToken)
@@ -67,7 +68,7 @@ public class BatchController(
     /// <response code="404">Партия не найдена.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BatchDto))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> GetBatch(int id, CancellationToken cancellationToken)
     {
         var batch = await batchService.GetByIdAsync(id, cancellationToken);
@@ -89,9 +90,9 @@ public class BatchController(
     [HttpPost]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BatchDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> CreateBatch([FromBody] CreateBatchRequest request,
         CancellationToken cancellationToken)
     {
@@ -118,10 +119,10 @@ public class BatchController(
     [HttpPut("{id}/move")]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> MoveBatch(int id, [FromBody] MoveBatchRequest request,
         CancellationToken cancellationToken)
     {
@@ -143,9 +144,9 @@ public class BatchController(
     [HttpDelete("{id}")]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> DeleteBatch(int id, CancellationToken cancellationToken)
     {
         await batchService.DeleteBatchAsync(id, cancellationToken);

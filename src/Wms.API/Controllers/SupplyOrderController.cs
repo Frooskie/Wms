@@ -3,6 +3,7 @@ using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wms.API.DTOs.Common;
 using Wms.API.DTOs.Supply;
 using Wms.API.Extensions;
 using Wms.Core.Constants;
@@ -31,7 +32,7 @@ public class SupplyOrderController(
     [HttpPost]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
     public async Task<ActionResult<SupplyOrderDto>> Create(
         [FromBody] CreateSupplyOrderRequest request,
         CancellationToken cancellationToken)
@@ -72,7 +73,7 @@ public class SupplyOrderController(
     /// <response code="404">Заказ не найден.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<ActionResult<SupplyOrderDto>> GetById(int id, CancellationToken cancellationToken)
     {
         var order = await service.GetByIdWithDetailsAsync(id, cancellationToken);
@@ -96,8 +97,8 @@ public class SupplyOrderController(
     [HttpPut("{id}/confirm")]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> Confirm(int id, CancellationToken cancellationToken)
     {
         await service.ConfirmOrderAsync(id, cancellationToken);
@@ -116,8 +117,8 @@ public class SupplyOrderController(
     [HttpPut("{id}/ship")]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief + "," + Roles.Worker)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> Ship(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;

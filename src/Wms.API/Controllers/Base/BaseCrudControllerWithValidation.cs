@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Wms.API.DTOs.Common;
 using Wms.API.Extensions;
 using Wms.Core.Interfaces.Services.Base;
 
@@ -26,7 +27,7 @@ public abstract class BaseCrudControllerWithValidation<TEntity, TDto, TCreateDto
     /// <response code="400">Ошибка валидации.</response>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
     public override async Task<ActionResult<TDto>> Create(TCreateDto createDto, CancellationToken cancellationToken)
     {
         if (createValidator != null)
@@ -42,8 +43,8 @@ public abstract class BaseCrudControllerWithValidation<TEntity, TDto, TCreateDto
     /// <response code="404">Сущность не найдена.</response>
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public override async Task<IActionResult> Update(int id, TUpdateDto updateDto, CancellationToken cancellationToken)
     {
         if (updateValidator != null)

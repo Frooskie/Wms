@@ -3,6 +3,7 @@ using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wms.API.DTOs.Common;
 using Wms.API.DTOs.Supply;
 using Wms.API.Extensions;
 using Wms.Core.Constants;
@@ -33,9 +34,9 @@ public class SupplyRequestController(
     [HttpPost]
     [Authorize(Roles = Roles.StoreDirector)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(SupplyRequestDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(WmsProblemDetails))]
     public async Task<ActionResult<SupplyRequestDto>> Create([FromBody] CreateSupplyRequestRequest request,
         CancellationToken cancellationToken)
     {
@@ -66,7 +67,7 @@ public class SupplyRequestController(
     /// <response code="400">Неверное значение параметра status.</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<SupplyRequestDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
     public async Task<ActionResult<IEnumerable<SupplyRequestDto>>> GetAll(
         [FromQuery] string? status,
         [FromQuery] string? createdBy,
@@ -96,7 +97,7 @@ public class SupplyRequestController(
     /// <response code="404">Заявка не найдена.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SupplyRequestDto))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<ActionResult<SupplyRequestDto>> GetById(int id, CancellationToken cancellationToken)
     {
         var req = await service.GetByIdWithLinesAsync(id, cancellationToken);
@@ -114,9 +115,9 @@ public class SupplyRequestController(
     /// <response code="404">Заявка не найдена.</response>
     [HttpPut("{id}/submit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> Submit(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
@@ -134,10 +135,10 @@ public class SupplyRequestController(
     [HttpPut("{id}/approve")]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> Approve(int id, CancellationToken cancellationToken)
     {
         await service.ApproveAsync(id, cancellationToken);
@@ -154,10 +155,10 @@ public class SupplyRequestController(
     [HttpPut("{id}/reject")]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> Reject(int id, CancellationToken cancellationToken)
     {
         await service.RejectAsync(id, cancellationToken);

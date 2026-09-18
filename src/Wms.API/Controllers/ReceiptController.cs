@@ -3,6 +3,7 @@ using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wms.API.DTOs.Common;
 using Wms.API.DTOs.Receipts;
 using Wms.API.Extensions;
 using Wms.Core.Constants;
@@ -31,7 +32,7 @@ public class ReceiptController(
     [HttpPost]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ReceiptDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
     public async Task<ActionResult<ReceiptDto>> CreateReceipt(
         [FromBody] CreateReceiptRequest request,
         CancellationToken cancellationToken)
@@ -79,7 +80,7 @@ public class ReceiptController(
     /// <response code="404">Документ не найден.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ReceiptDto))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<ActionResult<ReceiptDto>> GetReceipt(int id, CancellationToken cancellationToken)
     {
         var receipt = await receiptService.GetReceiptWithLinesAsync(id, cancellationToken);
@@ -104,8 +105,8 @@ public class ReceiptController(
     [HttpPut("{id}/receive")]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief + "," + Roles.Worker)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> ReceiveReceipt(
         int id,
         [FromBody] ReceiveReceiptRequest request,

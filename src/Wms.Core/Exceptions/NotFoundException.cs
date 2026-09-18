@@ -10,7 +10,7 @@ public class NotFoundException : BaseException
     }
 
     public NotFoundException(string entityName, object id)
-        : base($"Entity '{entityName}' with id '{id}' was not found.", ErrorCodes.NotFound)
+        : base($"Сущность '{entityName}' с идентификатором '{id}' не найдена.", ErrorCodes.NotFound)
     {
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Wms.API.MappingProfiles;
 using Wms.API.Middlewares;
+using Wms.API.Swagger;
 using Wms.API.Validators;
 using Wms.API.Validators.Auth;
 using Wms.Core.Constants;
@@ -110,6 +111,8 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+    
+    c.SchemaFilter<EnumMemberSchemaFilter>();
 });
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();

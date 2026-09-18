@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wms.API.DTOs.Common;
 using Wms.API.DTOs.Notifications;
 using Wms.Core.Constants;
 using Wms.Core.Exceptions;
@@ -20,7 +21,7 @@ public class NotificationsController(INotificationService notificationService) :
     /// <response code="401">Пользователь не авторизован.</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NotificationResponseDto>))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(WmsProblemDetails))]
     public async Task<ActionResult<IEnumerable<NotificationResponseDto>>> GetMyNotifications(
         [FromQuery] bool? isRead,
         CancellationToken cancellationToken)
@@ -44,8 +45,8 @@ public class NotificationsController(INotificationService notificationService) :
     /// <response code="404">Уведомление не найдено или не принадлежит пользователю.</response>
     [HttpPut("{id}/read")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> MarkAsRead(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -61,8 +62,8 @@ public class NotificationsController(INotificationService notificationService) :
     /// <response code="404">Уведомление не найдено или не принадлежит пользователю.</response>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value

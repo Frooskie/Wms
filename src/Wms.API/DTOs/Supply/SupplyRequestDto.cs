@@ -5,7 +5,7 @@ public class SupplyRequestDto
     public int Id { get; set; }
     public string StoreName { get; set; } = string.Empty;
 
-    /// <summary>Статус (Enum SupplyOrderStatus: 0 — Draft, 1 — Confirmed, 2 — Shipped).</summary>
+    /// <summary>Статус (Enum SupplyRequestStatus: 0 — Draft, 1 — Confirmed, 2 — Shipped).</summary>
     public string Status { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; }

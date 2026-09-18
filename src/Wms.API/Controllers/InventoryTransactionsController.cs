@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using FluentValidation;
+using Wms.API.DTOs.Common;
 using Wms.Core.Constants;
 using Wms.Core.Enums;
 using Wms.API.DTOs.Transactions;
@@ -32,7 +33,7 @@ public class InventoryTransactionsController(
     /// <response code="400">Ошибка валидации фильтра или неверное значение TransactionType.</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PagedResult<InventoryTransactionResponseDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
     public async Task<ActionResult<PagedResult<InventoryTransactionResponseDto>>> GetTransactions(
         [FromQuery] TransactionFilterDto filter,
         CancellationToken cancellationToken)

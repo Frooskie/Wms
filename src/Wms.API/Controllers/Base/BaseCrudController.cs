@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wms.API.DTOs.Common;
 using Wms.Core.Constants;
 using Wms.Core.Exceptions;
 using Wms.Core.Interfaces.Services.Base;
@@ -26,7 +27,7 @@ public abstract class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>(
     [HttpPost]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
     public virtual async Task<ActionResult<TDto>> Create(
         [FromBody] TCreateDto createDto,
         CancellationToken cancellationToken)
@@ -45,8 +46,8 @@ public abstract class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>(
     [HttpPut("{id}")]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(WmsProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public virtual async Task<IActionResult> Update(
         int id,
         [FromBody] TUpdateDto updateDto,
@@ -69,7 +70,7 @@ public abstract class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto>(
     [HttpDelete("{id}")]
     [Authorize(Roles = Roles.Manager + "," + Roles.Chief)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public virtual async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var existing = await service.GetByIdAsync(id, cancellationToken);

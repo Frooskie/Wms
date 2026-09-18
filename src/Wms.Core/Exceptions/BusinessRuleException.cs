@@ -1,4 +1,6 @@
-﻿namespace Wms.Core.Exceptions;
+﻿using Wms.Core.Constants;
 
-public class BusinessRuleException(string message, string code = "BUSINESS_RULE_VIOLATION")
+namespace Wms.Core.Exceptions;
+
+public class BusinessRuleException(string message, ErrorCodes code = ErrorCodes.BusinessRuleViolation)
     : BaseException(message, code);

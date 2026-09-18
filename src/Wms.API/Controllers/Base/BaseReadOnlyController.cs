@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wms.API.DTOs.Common;
 using Wms.Core.DTOs.common;
 using Wms.Core.DTOs.Common;
 using Wms.Core.Exceptions;
@@ -35,7 +36,7 @@ public abstract class BaseReadOnlyController<TEntity, TDto>(IReadOnlyService<TEn
     /// <response code="404">Сущность не найдена.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(WmsProblemDetails))]
     public virtual async Task<ActionResult<TDto>> GetById(int id, CancellationToken cancellationToken)
     {
         var entity = await service.GetByIdAsync(id, cancellationToken);

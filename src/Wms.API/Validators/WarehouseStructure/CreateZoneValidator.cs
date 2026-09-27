@@ -11,8 +11,10 @@ public class CreateZoneValidator : AbstractValidator<CreateZoneRequest>
         RuleFor(x => x.Name)
             .NotEmpty()
             .MaximumLength(200);
-        
+
         RuleFor(x => x.Type)
+            .NotNull()
+            .WithMessage(ErrorMessages.WarehouseStructure.InvalidZoneType)
             .IsInEnum()
             .WithMessage(ErrorMessages.WarehouseStructure.InvalidZoneType);
     }

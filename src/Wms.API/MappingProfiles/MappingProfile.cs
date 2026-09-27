@@ -17,8 +17,7 @@ public class MappingProfile : Profile
         CreateMap<CreateWarehouseRequest, Warehouse>();
         CreateMap<UpdateWarehouseRequest, Warehouse>();
 
-        CreateMap<Zone, ZoneDto>()
-            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()));
+        CreateMap<Zone, ZoneDto>();
         CreateMap<CreateZoneRequest, Zone>();
         CreateMap<UpdateZoneRequest, Zone>();
 

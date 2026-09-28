@@ -129,7 +129,16 @@
 - На `ExpiryDate` для фоновых проверок.
 - На `CellId` для поиска партии по ячейке (уникальность не требуется, так как ячейка может быть пустой, но бизнес-логика гарантирует, что в одной ячейке не более одной партии).
 
-**Ограничение:** `ReservedQuantity` всегда <= `Quantity`.
+**Ограничения на уровне БД (CHECK constraints):**
+
+- `CK_Batches_ExpiryAfterProduction` — `"ExpiryDate" > "ProductionDate"`.
+- `CK_Batches_ReservedNotExceedQuantity` — `"ReservedQuantity" <= "Quantity"`.
+
+**Ограничения на уровне приложения (FluentValidation):**
+
+- `ProductionDate <= today` — зависит от текущей даты, не может быть CHECK.
+- `ExpiryDate > today` — то же.
+- `ExpiryDate > ProductionDate` — **продублировано** в CHECK для защиты от обхода API.
 
 ---
 

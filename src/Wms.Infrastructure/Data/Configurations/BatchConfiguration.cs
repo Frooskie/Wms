@@ -26,5 +26,16 @@ public class BatchConfiguration : IEntityTypeConfiguration<Batch>
         builder.HasIndex(b => b.ExpiryDate);
         builder.HasIndex(b => b.ProductId);
         builder.HasIndex(b => b.CellId);
+        
+        builder.ToTable(t =>
+        {
+            t.HasCheckConstraint(
+                "CK_Batches_ExpiryAfterProduction",
+                "\"ExpiryDate\" > \"ProductionDate\"");
+
+            t.HasCheckConstraint(
+                "CK_Batches_ReservedNotExceedQuantity",
+                "\"ReservedQuantity\" <= \"Quantity\"");
+        });
     }
 }

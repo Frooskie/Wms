@@ -49,6 +49,16 @@
     - `ReservedQuantity = 0`.
     - Создаётся `InventoryTransaction` типа `In`.
 
+- **Правила валидации при создании партии:**
+  - `ProductionDate` не может быть в будущем (`<= today`) — FluentValidation.
+  - `ExpiryDate` должен быть в будущем (`> today`) — FluentValidation.
+  - `ExpiryDate` должен быть строго позже `ProductionDate` — FluentValidation **и** CHECK constraint `CK_Batches_ExpiryAfterProduction` на уровне БД.
+
+> **Следствие.** Через API нельзя создать партию, срок годности которой
+> уже истёк. Просроченные партии появляются естественным образом со временем.
+> Для наполнения БД тестовыми просроченными партиями используйте SQL-скрипты —
+> API такие данные не пропустит.
+
 - **При перемещении партии** в другую ячейку:
     - Новая ячейка должна быть свободна (`IsOccupied == false`).
     - Старая ячейка освобождается (`IsOccupied = false`).

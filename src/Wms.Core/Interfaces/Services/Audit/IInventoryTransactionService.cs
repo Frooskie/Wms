@@ -16,9 +16,9 @@ public interface IInventoryTransactionService
         int pageNumber = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
-    
+
     Task AddTransactionAsync(
-        int batchId,
+        Batch batch,                                             // ← было int batchId
         int quantityChange,
         TransactionType transactionType,
         string userId,

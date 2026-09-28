@@ -185,7 +185,7 @@ public class SupplyOrderServiceTests
         cell.IsOccupied.Should().BeFalse();
 
         _transactionServiceMock.Verify(t => t.AddTransactionAsync(
-                batchId,
+                batch,
                 -reservedQty,
                 TransactionType.Out,
                 userId,

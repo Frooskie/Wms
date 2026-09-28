@@ -36,7 +36,7 @@ public class BatchService(
         await _repository.AddAsync(batch, cancellationToken);
 
         await transactionService.AddTransactionAsync(
-            batch.Id,
+            batch,
             batch.Quantity,
             TransactionType.In,
             userId,
@@ -97,11 +97,11 @@ public class BatchService(
         batchRepository.Update(batch);
 
         await transactionService.AddTransactionAsync(
-            batch.Id,
+            batch,
             0,
             TransactionType.Move,
             userId,
-            null, // документ на перемещение не предусмотрен
+            null,
             oldCell?.Id,
             newCell.Id,
             cancellationToken);

@@ -26,7 +26,7 @@ public class InventoryTransactionService(IInventoryTransactionRepository reposit
     }
 
     public async Task AddTransactionAsync(
-        int batchId,
+        Batch batch,
         int quantityChange,
         TransactionType transactionType,
         string userId,
@@ -37,7 +37,8 @@ public class InventoryTransactionService(IInventoryTransactionRepository reposit
     {
         var transaction = new InventoryTransaction
         {
-            BatchId = batchId,
+            Batch = batch,
+            BatchId = batch.Id,
             QuantityChange = quantityChange,
             TransactionType = transactionType,
             UserId = userId,
@@ -48,6 +49,5 @@ public class InventoryTransactionService(IInventoryTransactionRepository reposit
         };
 
         await repository.AddAsync(transaction, cancellationToken);
-        // не вызываем SaveChanges – сохранение произойдёт в вызывающем сервисе
     }
 }

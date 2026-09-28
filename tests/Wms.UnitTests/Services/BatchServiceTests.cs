@@ -75,14 +75,7 @@ public class BatchServiceTests
 
         _transactionServiceMock.Verify(
             t => t.AddTransactionAsync(
-                batch.Id,
-                0,
-                TransactionType.Move,
-                userId,
-                null,
-                oldCell.Id,
-                newCell.Id,
-                It.IsAny<CancellationToken>()),
+                batch, 0, TransactionType.Move, userId, null, oldCell.Id, newCell.Id, It.IsAny<CancellationToken>()),
             Times.Once);
 
         _batchRepositoryMock.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);

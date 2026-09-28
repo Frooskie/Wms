@@ -181,7 +181,7 @@ public class SupplyOrderService(
             batchesToUpdate.Add(batch);
 
             await transactionService.AddTransactionAsync(
-                batch.Id,
+                batch,
                 -group.TotalReserved,
                 TransactionType.Out,
                 userId,

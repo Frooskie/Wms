@@ -112,8 +112,8 @@ public class BatchService(
     public async Task<PagedResult<Batch>> GetPagedBatchesWithFiltersAsync(
         int? productId = null,
         int? cellId = null,
-        DateTime? expiryFrom = null,
-        DateTime? expiryTo = null,
+        DateOnly? expiryFrom = null,
+        DateOnly? expiryTo = null,
         int pageNumber = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)

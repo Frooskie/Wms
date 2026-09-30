@@ -58,9 +58,10 @@ public class SupplyOrderServiceTests
             }
         };
 
-        var batch1 = new Batch { Id = 1, ProductId = productId, Quantity = 20, ReservedQuantity = 0, ExpiryDate = DateTime.UtcNow.AddDays(10) };
-        var batch2 = new Batch { Id = 2, ProductId = productId, Quantity = 20, ReservedQuantity = 0, ExpiryDate = DateTime.UtcNow.AddDays(20) };
-
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var batch1 = new Batch { Id = 1, ProductId = productId, Quantity = 20, ReservedQuantity = 0, ExpiryDate = today.AddDays(10) };
+        var batch2 = new Batch { Id = 2, ProductId = productId, Quantity = 20, ReservedQuantity = 0, ExpiryDate = today.AddDays(20) };
+        
         _orderRepositoryMock
             .Setup(r => r.GetSupplyOrderWithLinesAndReservationsAsync(orderId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(order);

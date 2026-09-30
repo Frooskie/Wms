@@ -8,7 +8,7 @@ public record CreateBatchRequest
     /// <summary>Закупочная цена за единицу.</summary>
     public decimal PurchasePrice { get; init; }
 
-    public DateTime ProductionDate { get; init; }
-    public DateTime ExpiryDate { get; init; }
+    public DateOnly ProductionDate { get; init; }
+    public DateOnly ExpiryDate { get; init; }
     public int CellId { get; init; }
 }

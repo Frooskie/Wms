@@ -39,8 +39,9 @@ public class BatchRepository(ApplicationDbContext context) : Repository<Batch>(c
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
-
-    public async Task<IEnumerable<Batch>> GetBatchesByExpiryDateRangeAsync(DateTime from, DateTime to,
+    
+    public async Task<IEnumerable<Batch>> GetBatchesByExpiryDateRangeAsync(
+        DateOnly from, DateOnly to,
         CancellationToken cancellationToken = default)
     {
         return await Context.Batches
@@ -63,8 +64,8 @@ public class BatchRepository(ApplicationDbContext context) : Repository<Batch>(c
     public async Task<PagedResult<Batch>> GetBatchesPagedFilteredAsync(
         int? productId = null,
         int? cellId = null,
-        DateTime? expiryFrom = null,
-        DateTime? expiryTo = null,
+        DateOnly? expiryFrom = null,
+        DateOnly? expiryTo = null,
         int pageNumber = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)

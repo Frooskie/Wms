@@ -49,7 +49,7 @@ public class ReceiptService(
 
     public async Task ReceiveReceiptAsync(
         int receiptId,
-        List<(int productId, int actualQuantity, int cellId, DateTime expiryDate, decimal purchasePrice)> receiveLines,
+        List<(int productId, int actualQuantity, int cellId, DateOnly expiryDate, decimal purchasePrice)> receiveLines,
         string userId,
         CancellationToken cancellationToken = default)
     {
@@ -73,6 +73,8 @@ public class ReceiptService(
             if (cell.IsOccupied)
                 throw new BusinessRuleException(ErrorMessages.Receipt.CellOccupied(cell.Code), ErrorCodes.CellOccupied);
         }
+        
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
         foreach (var line in receiveLines)
         {
@@ -82,9 +84,9 @@ public class ReceiptService(
                 Quantity = line.actualQuantity,
                 ReservedQuantity = 0,
                 PurchasePrice = line.purchasePrice,
-                ProductionDate = DateTime.UtcNow,
+                ProductionDate = today,
                 ExpiryDate = line.expiryDate,
-                ReceivedDate = DateTime.UtcNow,
+                ReceivedDate = today,
                 CellId = line.cellId
             };
 

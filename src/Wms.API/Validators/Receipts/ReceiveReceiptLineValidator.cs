@@ -18,7 +18,7 @@ public class ReceiveReceiptLineValidator : AbstractValidator<ReceiveReceiptLineR
             .GreaterThan(0);
 
         RuleFor(x => x.ExpiryDate)
-            .Must(date => date > DateTime.UtcNow)
+            .Must(date => date > DateOnly.FromDateTime(DateTime.UtcNow))
             .WithMessage(ErrorMessages.Receipt.ExpiryDateMustBeFuture);
 
         RuleFor(x => x.PurchasePrice)

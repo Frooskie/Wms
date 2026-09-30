@@ -8,6 +8,8 @@ public class CreateBatchValidator : AbstractValidator<CreateBatchRequest>
 {
     public CreateBatchValidator()
     {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        
         RuleFor(x => x.ProductId)
             .GreaterThan(0);
 
@@ -19,11 +21,11 @@ public class CreateBatchValidator : AbstractValidator<CreateBatchRequest>
             .WithMessage(ErrorMessages.Batch.PurchasePriceNegative);
 
         RuleFor(x => x.ProductionDate)
-            .Must(date => date <= DateTime.UtcNow)
+            .Must(date => date <= today)
             .WithMessage(ErrorMessages.Batch.ProductionDateInFuture);
 
         RuleFor(x => x.ExpiryDate)
-            .Must(date => date > DateTime.UtcNow)
+            .Must(date => date > today)
             .WithMessage(ErrorMessages.Batch.ExpiryDateMustBeFuture);
 
         RuleFor(x => x.CellId)

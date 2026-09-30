@@ -14,11 +14,11 @@ public record BatchDto
     
     /// <summary>Закупочная цена за единицу.</summary>
     public decimal PurchasePrice { get; init; }
-    public DateTime ProductionDate { get; init; }
-    public DateTime ExpiryDate { get; init; }
+    public DateOnly ProductionDate { get; init; }
+    public DateOnly ExpiryDate { get; init; }
     
     /// <summary>Дата поступления на склад.</summary>
-    public DateTime ReceivedDate { get; init; }
+    public DateOnly ReceivedDate { get; init; }
     public int CellId { get; init; }
     public string CellCode { get; init; } = string.Empty;
     public string ShelfNumber { get; init; } = string.Empty;

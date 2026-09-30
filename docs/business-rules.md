@@ -80,6 +80,16 @@
 
 - **При резервировании** (см. раздел 6) – `ReservedQuantity` увеличивается, но `Quantity` не меняется.
 
+### Формат дат
+
+`ProductionDate`, `ExpiryDate` и `ReceivedDate` хранятся в БД как `date`
+(без времени) — это семантические **даты**, а не моменты времени.
+В API передаются строками в формате `yyyy-MM-dd` (`2026-09-01`).
+
+Системные поля-моменты (`InventoryTransaction.Timestamp`, `CreatedAt`,
+`ConfirmedAt`, `ShippedAt`, `ReceivedAt`, `RejectedAt` и т.п.) остаются
+`timestamptz` — это точки во времени, а не даты.
+
 ---
 
 ## 5. Приёмка товаров (Receipt)
@@ -91,7 +101,7 @@
     - `ProductId`
     - `ActualQuantity` – фактически поступившее количество
     - `CellId` – ячейка для размещения
-    - `ExpiryDate`
+    - `ExpiryDate` (тип `date`, формат `yyyy-MM-dd`)
     - `PurchasePrice`
 - Правила:
     - Для каждой позиции создаётся отдельная партия (`Batch`), если `ActualQuantity > 0`.

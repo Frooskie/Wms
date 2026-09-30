@@ -10,9 +10,11 @@ public interface IReceiptService
     Task<Receipt?> GetReceiptWithLinesAsync(int receiptId, CancellationToken cancellationToken = default);
     Task<IEnumerable<Receipt>> GetAllReceiptsWithLinesAsync(CancellationToken cancellationToken = default);
 
-    Task ReceiveReceiptAsync(int receiptId,
-        List<(int productId, int actualQuantity, int cellId, DateTime expiryDate, decimal purchasePrice)> receiveLines,
-        string userId, CancellationToken cancellationToken = default);
+    Task ReceiveReceiptAsync(
+        int receiptId,
+        List<(int productId, int actualQuantity, int cellId, DateOnly expiryDate, decimal purchasePrice)> receiveLines,
+        string userId,
+        CancellationToken cancellationToken = default);
 
     Task RejectReceiptAsync(int receiptId, CancellationToken cancellationToken = default);
 }

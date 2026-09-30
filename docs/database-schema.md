@@ -119,9 +119,9 @@
 | `Quantity` | `int` | `NOT NULL` | Текущее доступное количество. |
 | `ReservedQuantity` | `int` | `NOT NULL`, по умолчанию `0` | Зарезервированное количество под заказы. |
 | `PurchasePrice` | `numeric(18,2)` | `NOT NULL` | Закупочная цена за единицу. |
-| `ProductionDate` | `timestamp` | `NOT NULL` | Дата производства. |
-| `ExpiryDate` | `timestamp` | `NOT NULL` | Дата истечения срока годности. |
-| `ReceivedDate` | `timestamp` | `NOT NULL` | Дата поступления на склад. |
+| `ProductionDate` | `date` | `NOT NULL` | Дата производства (без времени). |
+| `ExpiryDate` | `date` | `NOT NULL` | Дата истечения срока годности (без времени). |
+| `ReceivedDate` | `date` | `NOT NULL` | Дата поступления на склад (без времени). |
 | `CellId` | `int` | `FK`, `NOT NULL` | Ссылка на ячейку (`Cells.Id`). |
 
 **Индексы:**
@@ -139,6 +139,10 @@
 - `ProductionDate <= today` — зависит от текущей даты, не может быть CHECK.
 - `ExpiryDate > today` — то же.
 - `ExpiryDate > ProductionDate` — **продублировано** в CHECK для защиты от обхода API.
+
+> **Тип `date`** для этих трёх полей выбран осознанно: это семантические
+> даты (день), а не моменты времени. `timestamptz` для них создавал
+> проблемы при биндинге `yyyy-MM-dd` и при сравнении с `today`.
 
 ---
 
@@ -173,14 +177,15 @@
 | `ReceiptId` | `int` | `FK`, `NOT NULL` | Ссылка на документ (`Receipts.Id`). |
 | `ProductId` | `int` | `FK`, `NOT NULL` | Ожидаемый товар (`Products.Id`). |
 | `ExpectedQuantity` | `int` | `NOT NULL` | Ожидаемое количество. |
-| `ActualQuantity` | `int` | `NULL` | Фактическое количество (заполняется при приёмке). |
-| `CellId` | `int` | `NULL` | Ячейка, куда размещена партия (заполняется при приёмке). |
-| `ExpiryDate` | `timestamp` | `NULL` | Срок годности (заполняется при приёмке). |
-| `PurchasePrice` | `numeric(18,2)` | `NULL` | Закупочная цена (заполняется при приёмке). |
 
 **Индексы:** на `ReceiptId`, `ProductId`.
 
-**Бизнес-логика:** при подтверждении приёмки для каждой строки создаётся партия (`Batch`) со значениями `ActualQuantity`, `CellId`, `ExpiryDate`, `PurchasePrice`. Если `ActualQuantity` отличается от `ExpectedQuantity`, это фиксируется в `Receipt.Comment`.
+**Бизнес-логика:** при подтверждении приёмки клиент передаёт фактические
+позиции (`ActualQuantity`, `CellId`, `ExpiryDate`, `PurchasePrice`) в DTO
+`ReceiveReceiptLineRequest`. На основе этих данных создаётся новая
+партия (`Batch`). В `ReceiptLine` фактические данные не сохраняются —
+это соответствует упрощённой модели, где строка документа приёмки
+фиксирует только ожидаемое количество.
 
 ---
 
@@ -347,7 +352,6 @@ Products 1───* SupplyOrderLines
 
 Batches 1───* InventoryTransactions
 Batches 1───* Reservations
-Batches 1───0..1 ReceiptLine (связь при создании партии из ReceiptLine не обязательна, но можно добавить)
 
 SupplyRequests 1───* SupplyRequestLines
 SupplyRequests 1───0..1 SupplyOrders (один заказ на одну заявку)

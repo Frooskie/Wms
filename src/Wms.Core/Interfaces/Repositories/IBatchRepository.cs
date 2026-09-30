@@ -9,7 +9,8 @@ public interface IBatchRepository : IRepository<Batch>
     Task<IEnumerable<Batch>> GetBatchesByProductAsync(int productId, CancellationToken cancellationToken = default);
     Task<IEnumerable<Batch>> GetBatchesByCellAsync(int cellId, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<Batch>> GetBatchesByExpiryDateRangeAsync(DateTime from, DateTime to,
+    Task<IEnumerable<Batch>> GetBatchesByExpiryDateRangeAsync(
+        DateOnly from, DateOnly to,
         CancellationToken cancellationToken = default);
 
     Task<Batch?> GetBatchWithProductAndCellAsync(int batchId, CancellationToken cancellationToken = default);
@@ -17,8 +18,8 @@ public interface IBatchRepository : IRepository<Batch>
     Task<PagedResult<Batch>> GetBatchesPagedFilteredAsync(
         int? productId = null,
         int? cellId = null,
-        DateTime? expiryFrom = null,
-        DateTime? expiryTo = null,
+        DateOnly? expiryFrom = null,
+        DateOnly? expiryTo = null,
         int pageNumber = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

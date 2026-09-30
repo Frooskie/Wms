@@ -6,8 +6,8 @@ public record BatchFilterDto
 {
     public int? ProductId { get; init; }
     public int? CellId { get; init; }
-    public DateTime? ExpiryFrom { get; init; }
-    public DateTime? ExpiryTo { get; init; }
+    public DateOnly? ExpiryFrom { get; init; }
+    public DateOnly? ExpiryTo { get; init; }
 
     private int _pageNumber = 1;
     private int _pageSize = 10;

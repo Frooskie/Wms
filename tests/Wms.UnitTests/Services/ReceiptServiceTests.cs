@@ -40,7 +40,7 @@ public class ReceiptServiceTests
         const int expectedQty = 50;
         const int actualQty = 45;
         const int cellId = 10;
-        var expiryDate = DateTime.UtcNow.AddDays(30);
+        var expiryDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(30);
         const decimal purchasePrice = 10.5m;
 
         var receipt = new Receipt
@@ -68,7 +68,7 @@ public class ReceiptServiceTests
             .ReturnsAsync((Batch b, string u, int? docId, CancellationToken ct) => b);
 
         var receiveLines =
-            new List<(int productId, int actualQuantity, int cellId, DateTime expiryDate, decimal purchasePrice)>
+            new List<(int productId, int actualQuantity, int cellId, DateOnly expiryDate, decimal purchasePrice)>
             {
                 (productId, actualQty, cellId, expiryDate, purchasePrice)
             };
@@ -118,9 +118,9 @@ public class ReceiptServiceTests
             .ReturnsAsync(cell);
 
         var receiveLines =
-            new List<(int productId, int actualQuantity, int cellId, DateTime expiryDate, decimal purchasePrice)>
+            new List<(int productId, int actualQuantity, int cellId, DateOnly expiryDate, decimal purchasePrice)>
             {
-                (productId, 10, cellId, DateTime.UtcNow.AddDays(30), 10.0m)
+                (productId, 10, cellId, DateOnly.FromDateTime(DateTime.UtcNow).AddDays(30), 10.0m)
             };
 
         // Act
@@ -144,7 +144,7 @@ public class ReceiptServiceTests
             .ReturnsAsync((Receipt?)null);
 
         var receiveLines =
-            new List<(int productId, int actualQuantity, int cellId, DateTime expiryDate, decimal purchasePrice)>();
+            new List<(int productId, int actualQuantity, int cellId, DateOnly expiryDate, decimal purchasePrice)>();
 
         // Act
         var act = async () =>

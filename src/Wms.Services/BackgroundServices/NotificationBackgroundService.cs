@@ -36,7 +36,7 @@ public class NotificationBackgroundService(
         var productRepository = scope.ServiceProvider.GetRequiredService<IProductRepository>();
         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
-        var today = DateTime.UtcNow.Date;
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var threeDaysFromNow = today.AddDays(3);
         var expiringBatches =
             await batchRepository.GetBatchesByExpiryDateRangeAsync(today, threeDaysFromNow, cancellationToken);

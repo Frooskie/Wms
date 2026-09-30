@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Wms.API.DTOs.Common;
 using Wms.Core.Constants;
 using Wms.Core.Exceptions;
@@ -24,8 +26,21 @@ public class ExceptionHandlingMiddleware(
                 throw;
             }
 
+            ex = TranslateDbException(ex);
             await HandleExceptionAsync(context, ex);
         }
+    }
+    
+    private static Exception TranslateDbException(Exception ex)
+    {
+        if (ex is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.RestrictViolation or PostgresErrorCodes.ForeignKeyViolation } })
+        {
+            return new BusinessRuleException(
+                ErrorMessages.Common.CannotDeleteReferenced,
+                ErrorCodes.CannotDeleteReferenced);
+        }
+
+        return ex;
     }
 
     private Task HandleExceptionAsync(HttpContext context, Exception exception)

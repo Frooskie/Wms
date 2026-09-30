@@ -31,6 +31,10 @@ public enum ErrorCodes
     /// <summary>Недостаточно прав для операции.</summary>
     [EnumMember(Value = "FORBIDDEN")]
     Forbidden,
+    
+    /// <summary>Нельзя удалить объект, на который ссылаются связанные записи.</summary>
+    [EnumMember(Value = "CANNOT_DELETE_REFERENCED")]
+    CannotDeleteReferenced,
 
     // ===== Партии и ячейки =====
 

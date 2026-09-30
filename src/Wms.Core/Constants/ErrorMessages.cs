@@ -15,6 +15,7 @@ public static class ErrorMessages
         public const string Forbidden = "Недостаточно прав для выполнения операции.";
         public const string InvalidRequest = "Некорректный запрос.";
         public const string UserNotAuthenticated = "Пользователь не аутентифицирован.";
+        public const string CannotDeleteReferenced = "Нельзя удалить объект: на него ссылаются связанные записи.";
     }
 
     /// <summary>Сообщения валидации входных данных (FluentValidation).</summary>

@@ -54,21 +54,18 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ReceivedDate, opt => opt.Ignore());
 
         CreateMap<Receipt, ReceiptDto>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.Lines, opt => opt.MapFrom(src => src.Lines));
 
         CreateMap<ReceiptLine, ReceiptLineDto>()
             .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
 
         CreateMap<SupplyRequest, SupplyRequestDto>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.Lines, opt => opt.MapFrom(src => src.Lines));
 
         CreateMap<SupplyRequestLine, SupplyRequestLineDto>()
             .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
-
+        
         CreateMap<SupplyOrder, SupplyOrderDto>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.Lines, opt => opt.MapFrom(src => src.Lines))
             .ForMember(dest => dest.Reservations, opt => opt.MapFrom(src => src.Reservations));
 

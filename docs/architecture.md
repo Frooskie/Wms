@@ -37,7 +37,7 @@ API знает о Infrastructure только через DI (регистрац�
 **Содержит:**
 - **DTOs** - DTO для передачи данных между слоями (например, `ExpiringBatchInfo`, `LowStockProductInfo`) 
 - **Entities** – доменные модели: `Warehouse`, `Zone`, `Rack`, `Shelf`, `Cell`, `Product`, `Batch`, `InventoryTransaction`, `Notification`, `ApplicationUser` (наследует `IdentityUser`).
-- **Enums** – перечисления: `ZoneType`, `TransactionType`, статусы документов.
+- **Enums** – перечисления: `ZoneType`, `TransactionType`, статусы документов, а также `ErrorCodes`.
 - **Interfaces** – контракты для репозиториев и сервисов. Базовые интерфейсы сервисов:
   - `IReadOnlyService<T>` – только методы чтения (`GetAll`, `GetById`).
   - `ICrudService<T>` – наследует `IReadOnlyService<T>` и добавляет методы изменения (`Create`, `Update`, `Delete`).
@@ -431,6 +431,21 @@ public class WmsProblemDetails : ProblemDetails
 **3. Кастомный JSON-конвертер.** На .NET 8 `JsonStringEnumConverter` игнорирует `[EnumMember]`, поэтому используется `EnumMemberJsonConverter<TEnum>`, который читает значения из атрибута. Конвертер применяется **только к свойству `WmsProblemDetails.Code`** — другие enum'ы API не затрагиваются.
 
 **4. SchemaFilter для Swagger.** Swashbuckle тоже по умолчанию показывает C#-имена (`NotFound`) вместо `[EnumMember]`-значений (`NOT_FOUND`). `EnumMemberSchemaFilter` исправляет это на уровне схемы.
+
+#### Две стратегии сериализации enum'ов
+
+В проекте сознательно используются **два разных паттерна**, и их не следует смешивать.
+
+| Паттерн | Где применяется | Формат JSON | Атрибуты |
+|---------|-----------------|-------------|----------|
+| **Машиночитаемые коды** | `ErrorCodes` (свойство `WmsProblemDetails.Code`) | `SNAKE_CASE` (`NOT_FOUND`) | `[EnumMember(Value = "…")]` + `[JsonConverter(typeof(EnumMemberJsonConverter<T>))]` на **свойстве** |
+| **Доменные статусы и типы** | `ReceiptStatus`, `SupplyOrderStatus`, `SupplyRequestStatus`, `TransactionType`, `ZoneType` | `PascalCase` (`Pending`, `Draft`, `In`) | `[JsonConverter(typeof(JsonStringEnumConverter))]` на **enum'е** |
+
+**Почему так:**
+
+- **Коды ошибок** должны быть стабильны и не зависеть от C#-имён — фронтенд обрабатывает их через `switch`, и `NOT_FOUND` читается лучше, чем `NotFound`. `EnumMemberJsonConverter` нужен, потому что встроенный `JsonStringEnumConverter` (.NET 8) игнорирует `[EnumMember]`.
+- **Доменные статусы** используются и в запросах (query-параметры фильтрации), и в ответах. `JsonStringEnumConverter` + `Enum.TryParse(..., ignoreCase: true)` дают бесплатный case-insensitive биндинг без кастомных биндеров. Значения совпадают с C#-именами, что упрощает отладку и логи.
+- `EnumMemberSchemaFilter` работает с **обоими** паттернами: если `[EnumMember]` есть — берёт его значение, если нет — берёт `f.Name`. Поэтому Swagger и NSwag одинаково корректно генерируют TS-enum в обоих случаях.
 
 #### Результат
 

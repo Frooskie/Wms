@@ -276,6 +276,8 @@
 
 Фронтенд определяет сценарий обработки по коду, а не по тексту.
 
+> **Важно не путать с доменными статусами.** `ErrorCodes` описывает **ошибки** и сериализуется в `SNAKE_CASE` через `[EnumMember]`. Доменные статусы документов (`ReceiptStatus`, `SupplyOrderStatus`, `SupplyRequestStatus`) и типы операций (`TransactionType`) — это **состояние документа**, а не ошибка. Они сериализуются как `PascalCase`-строки (`"Pending"`, `"Draft"`, `"In"`) через `JsonStringEnumConverter`.
+
 ### Список кодов
 
 | Код | HTTP | Ситуация |

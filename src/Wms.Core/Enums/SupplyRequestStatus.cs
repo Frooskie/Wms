@@ -1,5 +1,8 @@
-﻿namespace Wms.Core.Enums;
+﻿using System.Text.Json.Serialization;
 
+namespace Wms.Core.Enums;
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum SupplyRequestStatus
 {
     Draft,

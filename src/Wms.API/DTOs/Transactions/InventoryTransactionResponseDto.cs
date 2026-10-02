@@ -1,4 +1,6 @@
-﻿namespace Wms.API.DTOs.Transactions;
+﻿using Wms.Core.Enums;
+
+namespace Wms.API.DTOs.Transactions;
 
 public record InventoryTransactionResponseDto
 {
@@ -9,8 +11,8 @@ public record InventoryTransactionResponseDto
     /// <summary>Изменение количества (положительное — приход, отрицательное — расход).</summary>
     public int QuantityChange { get; init; }
 
-    /// <summary>Тип операции (Enum TransactionType: 0 — In, 1 — Out, 2 — Move, 3 — WriteOff).</summary>
-    public string TransactionType { get; init; } = string.Empty;
+    /// <summary>Тип операции.</summary>
+    public TransactionType TransactionType { get; init; }
 
     /// <summary>Идентификатор документа-инициатора (Receipts.Id для прихода, SupplyOrders.Id для отгрузки).</summary>
     public int? DocumentId { get; init; }

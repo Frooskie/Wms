@@ -1,4 +1,6 @@
-﻿namespace Wms.API.DTOs.Receipts;
+﻿using Wms.Core.Enums;
+
+namespace Wms.API.DTOs.Receipts;
 
 public record ReceiptDto
 {
@@ -8,8 +10,8 @@ public record ReceiptDto
     /// <summary>Примечание (например, расхождения).</summary>
     public string? Comment { get; init; }
 
-    /// <summary>Статус (Enum ReceiptStatus: 0 — Pending, 1 — Received, 2 — Rejected).</summary>
-    public string Status { get; init; } = string.Empty;
+    /// <summary>Статус приёмки.</summary>
+    public ReceiptStatus Status { get; init; }
 
     public DateTime CreatedAt { get; init; }
     public string CreatedBy { get; init; } = string.Empty;

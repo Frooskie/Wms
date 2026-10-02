@@ -1,12 +1,14 @@
-﻿namespace Wms.API.DTOs.Supply;
+﻿using Wms.Core.Enums;
+
+namespace Wms.API.DTOs.Supply;
 
 public class SupplyRequestDto
 {
     public int Id { get; set; }
     public string StoreName { get; set; } = string.Empty;
 
-    /// <summary>Статус (Enum SupplyRequestStatus: 0 — Draft, 1 — Confirmed, 2 — Shipped).</summary>
-    public string Status { get; set; } = string.Empty;
+    /// <summary>Статус заявки магазина.</summary>
+    public SupplyRequestStatus Status { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public DateTime? SubmittedAt { get; set; }
